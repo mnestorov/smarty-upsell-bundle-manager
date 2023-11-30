@@ -3,7 +3,7 @@
  * Plugin Name: MN - Custom Upsell Products Design for WooCommerce
  * Plugin URI: https://github.com/mnestorov/wp-custom-upsell-products-design
  * Description: Designed to change the product variation design for single products in WooCommerce.
- * Version: 1.0
+ * Version: 1.0.1
  * Author: Martin Nestorov
  * Author URI: https://github.com/mnestorov
  * Text Domain: mn-wp-custom-upsell-products-design

@@ -2,7 +2,7 @@
 
 # WordPress - Custom Upsell Product Design for WooCommerce
 
-[![Licence](https://img.shields.io/github/license/Ileriayo/markdown-badges?style=for-the-badge)](./LICENSE)
+[![Licence](https://img.shields.io/badge/LICENSE-GPL2.0+-blue)](./LICENSE)
 
 ## Overview
 
@@ -53,4 +53,4 @@ For a detailed list of changes and updates made to this project, please refer to
 
 ## License
 
-This project is released under the MIT License.
+This project is released under the [GPL-2.0+ License](http://www.gnu.org/licenses/gpl-2.0.txt).
