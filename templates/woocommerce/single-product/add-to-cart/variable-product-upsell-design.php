@@ -59,7 +59,7 @@ if ($up_sell_design) :
                                                 <?php endif; ?>
                                                 <span class="price" style="visibility:visible;word-spacing:normal;"><?= number_format($price, 2); ?> <?= $currency; ?></span>
                                                 <?php if (!is_null($free_delivery_amount) && $price > $free_delivery_amount) : ?>
-                                                    <span class="free_delivery"><?= __('Free delivery', 'mn-wp-custom-upsell-products-design'); ?></span>
+                                                    <span class="free_delivery"><?= __('Free delivery', 'smarty-custom-upsell-products-design'); ?></span>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
@@ -79,7 +79,7 @@ if ($up_sell_design) :
                         'selected' => $options[0],
                     ]);
 
-                    echo end($attribute_keys) === $attribute_name ? wp_kses_post(apply_filters('woocommerce_reset_variations_link', '<a class="reset_variations" href="#">' . esc_html__('Clear', 'mn-wordpress-custom-upsell-products-design') . '</a>')) : '';
+                    echo end($attribute_keys) === $attribute_name ? wp_kses_post(apply_filters('woocommerce_reset_variations_link', '<a class="reset_variations" href="#">' . esc_html__('Clear', 'smarty-custom-upsell-products-design') . '</a>')) : '';
                     ?>
                 </div>
             </div>

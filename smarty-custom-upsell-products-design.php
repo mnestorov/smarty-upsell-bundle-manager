@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name: MN - Custom Upsell Products Design for WooCommerce
- * Plugin URI: https://github.com/mnestorov/wp-custom-upsell-products-design
+ * Plugin Name: SM - Custom Upsell Products Design for WooCommerce
+ * Plugin URI: https://smartystudio.net/smarty-custom-upsell-products-design
  * Description: Designed to change the product variation design for single products in WooCommerce.
- * Version: 1.0.1
- * Author: Martin Nestorov
- * Author URI: https://github.com/mnestorov
- * Text Domain: mn-wp-custom-upsell-products-design
+ * Version: 1.0.0
+ * Author: Smarty Studio | Martin Nestorov
+ * Author URI: https://smartystudio.net
+ * Text Domain: smarty-custom-upsell-products-design
  * Domain Path: /languages/
  * WC requires at least: 3.0.0
  * WC tested up to: 5.1.0
@@ -39,7 +39,7 @@
  * @param bool $debug Whether to enable debug mode for detailed output.
  * @return void Outputs messages based on success or failure of file copying when debugging is enabled.
  */
-function mn_copy_files_to_child_theme($debug = false) {
+function smarty_copy_files_to_child_theme($debug = false) {
     $files_to_copy = [
 		'variation.php',
         'variable.php',
@@ -71,19 +71,19 @@ function mn_copy_files_to_child_theme($debug = false) {
 }
 
 // Use the function with debugging enabled
-//mn_copy_files_to_child_theme(true);
+//smarty_copy_files_to_child_theme(true);
 
 // Use the function without debugging (in production, for example)
-mn_copy_files_to_child_theme(false);
+smarty_copy_files_to_child_theme(false);
 
 /**
  * Adds custom fields to the WooCommerce attribute edit form.
  *
  * @return void Echoes HTML output for the custom field.
  */
-function mn_after_edit_attribute_fields() {
+function smarty_after_edit_attribute_fields() {
     $attr_id = isset($_GET['edit']) && $_GET['page'] === 'product_attributes' ? (int) $_GET['edit'] : false;
-    $attr_up_sell = mn_get_attr_fields($attr_id);
+    $attr_up_sell = smarty_get_attr_fields($attr_id);
 
     // Sanitization is crucial here for security
     $checked = checked('1', $attr_up_sell, false);
@@ -91,15 +91,15 @@ function mn_after_edit_attribute_fields() {
     // Escaping for output
     echo '<tr class="form-field">';
     echo '    <th valign="top" scope="row">';
-    echo '        <label for="up_sell_design">' . esc_html__('Custom up-sell design', 'mn-wp-custom-upsell-products-design') . '</label>';
+    echo '        <label for="up_sell_design">' . esc_html__('Custom up-sell design', 'smarty-custom-upsell-products-design') . '</label>';
     echo '    </th>';
     echo '    <td>';
     echo '        <input name="up_sell_design" id="up_sell_design" type="checkbox" value="1" ' . esc_attr($checked) . ' />';
-	echo '		  <p class="description">' . esc_html__('Turn the custom up-sell design on or off for attributes.', 'mn-wp-custom-upsell-products-design') . '</p>';
+	echo '		  <p class="description">' . esc_html__('Turn the custom up-sell design on or off for attributes.', 'smarty-custom-upsell-products-design') . '</p>';
     echo '    </td>';
     echo '</tr>';
 }
-add_action('woocommerce_after_edit_attribute_fields', 'mn_after_edit_attribute_fields', 10, 0);
+add_action('woocommerce_after_edit_attribute_fields', 'smarty_after_edit_attribute_fields', 10, 0);
 
 /**
  * Handles saving of the custom attribute fields on update.
@@ -109,14 +109,14 @@ add_action('woocommerce_after_edit_attribute_fields', 'mn_after_edit_attribute_f
  * @param string $old_attribute_name Old name of the attribute.
  * @return void Saves the custom field data but does not return a value.
  */
-function mn_woocommerce_attribute_updated($attribute_id, $attribute, $old_attribute_name) {
+function smarty_woocommerce_attribute_updated($attribute_id, $attribute, $old_attribute_name) {
 	if (isset($_POST['up_sell_design']) && $_POST['up_sell_design'] == 1) {
     	update_option('up_sell_design_'. $attribute_id, 1);
   	} else {
     	update_option('up_sell_design_'. $attribute_id, 0);
   	}
 }
-add_action('woocommerce_attribute_updated', 'mn_woocommerce_attribute_updated', 10, 3);
+add_action('woocommerce_attribute_updated', 'smarty_woocommerce_attribute_updated', 10, 3);
 
 /**
  * Retrieves the custom attribute fields.
@@ -124,7 +124,7 @@ add_action('woocommerce_attribute_updated', 'mn_woocommerce_attribute_updated', 
  * @param int $attr_id ID of the attribute.
  * @return mixed Value of the 'up_sell_design' option for the attribute or false if not set.
  */
-function mn_get_attr_fields($attr_id) {
+function smarty_get_attr_fields($attr_id) {
   	$attr_up_sell = get_option('up_sell_design_'. $attr_id, false);
   	return $attr_up_sell;
 }
@@ -136,7 +136,7 @@ function mn_get_attr_fields($attr_id) {
  * @param WC_Product $product WooCommerce product object.
  * @return string Modified price HTML.
  */
-function mn_variable_price_range($wc_variable_price, $product) {
+function smarty_variable_price_range($wc_variable_price, $product) {
   	$prefix = '';
   	$wc_variable_reg_min_price = $product->get_variation_regular_price('min', true);
   	$wc_variable__min_sale_price = $product->get_variation_sale_price('min', true);
@@ -148,8 +148,8 @@ function mn_variable_price_range($wc_variable_price, $product) {
 
   	return ($wc_variable_min_price == $wc_variable_max_price) ? $wc_variable_price : sprintf('%s%s', $prefix, $wc_variable_price);
 }
-add_filter('woocommerce_variable_sale_price_html', 'mn_variable_price_range', 10, 2);
-add_filter('woocommerce_variable_price_html', 'mn_variable_price_range', 10, 2);
+add_filter('woocommerce_variable_sale_price_html', 'smarty_variable_price_range', 10, 2);
+add_filter('woocommerce_variable_price_html', 'smarty_variable_price_range', 10, 2);
 
 /**
  * Recalculates the price of products in the cart under specific conditions.
@@ -157,7 +157,7 @@ add_filter('woocommerce_variable_price_html', 'mn_variable_price_range', 10, 2);
  * @param WC_Cart $cart_object The WooCommerce cart object.
  * @return void Modifies the cart object but does not return a value.
  */
-function mn_additional_product_recalculate_price($cart_object) {
+function smarty_additional_product_recalculate_price($cart_object) {
     $general_products = array();
     $all_pr = array();
     $new_pr_price = array();
@@ -192,7 +192,7 @@ function mn_additional_product_recalculate_price($cart_object) {
       	}
     }
 }
-add_action( 'woocommerce_before_calculate_totals', 'mn_additional_product_recalculate_price' );
+add_action( 'woocommerce_before_calculate_totals', 'smarty_additional_product_recalculate_price' );
 
 /**
  * Filters the variation data array to modify the price HTML output.
@@ -207,7 +207,7 @@ add_action( 'woocommerce_before_calculate_totals', 'mn_additional_product_recalc
  * @param WC_Product_Variation $variation The single variation object.
  * @return array Modified variation data including only the active price HTML.
  */
-function mn_woocommerce_available_variation( $variation_data, $product, $variation ) {
+function smarty_woocommerce_available_variation( $variation_data, $product, $variation ) {
     // Check if the variation is on sale.
     if ( $variation->is_on_sale() ) {
         // If on sale, set the price_html to the sale price wrapped in appropriate HTML.
@@ -220,14 +220,14 @@ function mn_woocommerce_available_variation( $variation_data, $product, $variati
     // Return the modified variation data array.
     return $variation_data;
 }
-add_filter( 'woocommerce_available_variation', 'mn_woocommerce_available_variation', 10, 3 );
+add_filter( 'woocommerce_available_variation', 'smarty_woocommerce_available_variation', 10, 3 );
 
 /**
  * Calculates the amount required for free delivery based on the blog ID.
  *
  * @return float Minimum amount required for free delivery.
  */
-function mn_free_delivery_amount() {
+function smarty_free_delivery_amount() {
     $minimum_free_delivery_amount = PHP_INT_MAX;
 
     // Get all shipping zones
