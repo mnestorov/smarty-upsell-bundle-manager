@@ -40,6 +40,7 @@
  * @return void Outputs messages based on success or failure of file copying when debugging is enabled.
  */
 function smarty_copy_files_to_child_theme($debug = false) {
+    // Define an array of file names to copy
     $files_to_copy = [
 		'variation.php',
         'variable.php',
@@ -47,6 +48,7 @@ function smarty_copy_files_to_child_theme($debug = false) {
         'variable-product-standard-variations.php',
     ];
 
+    // Define the source and destination directories
     $source_directory = plugin_dir_path( __FILE__ ) . '/templates/woocommerce/single-product/add-to-cart/';
     $destination_directory = get_stylesheet_directory() . '/woocommerce/single-product/add-to-cart/';
 
@@ -55,16 +57,20 @@ function smarty_copy_files_to_child_theme($debug = false) {
         mkdir($destination_directory, 0755, true);
     }
 
+    // Loop through each file and copy it
     foreach ($files_to_copy as $file_name) {
         $source_path = $source_directory . $file_name;
         $destination_path = $destination_directory . $file_name;
 
+        // Check if the source file exists
         if (file_exists($source_path)) {
-            if (!copy($source_path, $destination_path) && $debug) {
+            // Use the built-in PHP copy function to copy the file
+            if (copy($source_path, $destination_path)) {
+                echo 'Copied file: ' . $file_name . '<br>';
+            } else {
                 echo 'Error: Unable to copy file: ' . $file_name . '<br>';
-                print_r(error_get_last());
             }
-        } else if ($debug) {
+        } else {
             echo 'Error: Source file not found: ' . $file_name . '<br>';
         }
     }
@@ -138,6 +144,7 @@ function smarty_get_attr_fields($attr_id) {
  */
 function smarty_variable_price_range($wc_variable_price, $product) {
   	$prefix = '';
+    $wc_variable_min_sale_price = null;
   	$wc_variable_reg_min_price = $product->get_variation_regular_price('min', true);
   	$wc_variable__min_sale_price = $product->get_variation_sale_price('min', true);
   	$wc_variable__max_price = $product->get_variation_price('max', true);
@@ -255,6 +262,16 @@ function smarty_free_delivery_amount() {
     return ($minimum_free_delivery_amount !== PHP_INT_MAX) ? $minimum_free_delivery_amount : 0;
 }
 
+/**
+ * Outputs custom CSS to the head of single product pages.
+ *
+ * This function is hooked into the 'wp_head' action hook, so it runs
+ * whenever the head section of the site is generated. It checks if the
+ * current page is a single product page, and if so, it outputs a block
+ * of CSS styles to the head of the page.
+ *
+ * You can modify the CSS styles within the function to suit your needs.
+ */
 function smarty_custom_css() {
     if (is_product()) {
         echo '<style>
