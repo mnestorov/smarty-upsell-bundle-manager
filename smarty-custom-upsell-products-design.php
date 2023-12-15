@@ -80,7 +80,7 @@ function smarty_copy_files_to_child_theme($debug = false) {
 //smarty_copy_files_to_child_theme(true);
 
 // Use the function without debugging (in production, for example)
-smarty_copy_files_to_child_theme(false);
+//smarty_copy_files_to_child_theme(false);
 
 /**
  * Adds custom fields to the WooCommerce attribute edit form.

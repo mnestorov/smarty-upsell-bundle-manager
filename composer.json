@@ -1,0 +1,8 @@
+{
+    "require-dev": {
+        "10up/wp_mock": "^1.0"
+    },
+    "require": {
+        "mikey179/vfsstream": "^1.6"
+    }
+}
