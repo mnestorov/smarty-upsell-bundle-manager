@@ -5,7 +5,7 @@
 [![Licence](https://img.shields.io/badge/LICENSE-GPL2.0+-blue)](./LICENSE)
 
 - Developed by: [Smarty Studio](https://smartystudio.net) | [Martin Nestorov](https://github.com/mnestorov)
-- Plugin URI: https://smartystudio.net/smarty-speedy-office-locator
+- Plugin URI: https://smartystudio.net/smarty-custom-upsell-products-design
 
 ## Overview
 

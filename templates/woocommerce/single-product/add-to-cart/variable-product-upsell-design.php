@@ -1,5 +1,5 @@
 <?php
-$up_sell_design = function_exists('mn_get_attr_fields') && $attr_id ? mn_get_attr_fields($attr_id) : false;
+$up_sell_design = function_exists('smarty_get_attr_fields') && $attr_id ? smarty_get_attr_fields($attr_id) : false;
 
 if ($up_sell_design) :
     foreach ($attributes as $attribute_name => $options) :
@@ -27,10 +27,11 @@ if ($up_sell_design) :
 
                                 [$regular_price, $free_delivery_amount, $price, $currency] = [
                                     !empty($local_prices['regular_price']) ? $local_prices['regular_price'] : $single_variation->get_regular_price(),
-                                    function_exists('mn_free_delivery_amount') ? mn_free_delivery_amount() : '',
+                                    function_exists('smarty_free_delivery_amount') ? smarty_free_delivery_amount() : '',
                                     !empty($local_prices['price']) ? $local_prices['price'] : $single_variation->get_price(),
                                     !empty($local_prices['currency']) ? $local_prices['currency'] : $currency,
                                 ];
+								
                                 ?>
                                 <label class="check_container has_variations<?= $key_v == 0 ? ' first' : '' ?>">
                                     <span class="main_content">
@@ -58,6 +59,17 @@ if ($up_sell_design) :
                                                     <span class="price old_price" style="visibility:visible;word-spacing:normal;"><?= number_format($regular_price, 2) . ' ' . $currency; ?></span>
                                                 <?php endif; ?>
                                                 <span class="price" style="visibility:visible;word-spacing:normal;"><?= number_format($price, 2); ?> <?= $currency; ?></span>
+                                                
+                                                <?php $label_1 = get_post_meta($v, '_smarty_label_1', true); ?>
+                                                <?php if (!empty($label_1)) { ?>
+                                                    <div class="label_1"><?= esc_html($label_1); ?></div>
+                                                <?php } ?>
+
+                                                <?php $label_2 = get_post_meta($v, '_smarty_label_2', true); ?>
+                                                <?php if (!empty($label_2)) { ?>
+                                                    <div class="label_2"><?= esc_html($label_2); ?></div>
+                                                <?php } ?>
+                                                
                                                 <?php if (!is_null($free_delivery_amount) && $price > $free_delivery_amount) : ?>
                                                     <span class="free_delivery"><?= __('Free delivery', 'smarty-custom-upsell-products-design'); ?></span>
                                                 <?php endif; ?>
@@ -79,7 +91,7 @@ if ($up_sell_design) :
                         'selected' => $options[0],
                     ]);
 
-                    echo end($attribute_keys) === $attribute_name ? wp_kses_post(apply_filters('woocommerce_reset_variations_link', '<a class="reset_variations" href="#">' . esc_html__('Clear', 'smarty-custom-upsell-products-design') . '</a>')) : '';
+                    echo end($attribute_keys) === $attribute_name ? wp_kses_post(apply_filters('woocommerce_reset_variations_link', '<a class="reset_variations" href="#">' . esc_html__('Clear', 'mn-wordpress-custom-upsell-products-design') . '</a>')) : '';
                     ?>
                 </div>
             </div>

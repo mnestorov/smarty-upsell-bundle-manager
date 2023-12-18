@@ -40,6 +40,7 @@
  * @return void Outputs messages based on success or failure of file copying when debugging is enabled.
  */
 function smarty_copy_files_to_child_theme($debug = false) {
+    // Define an array of file names to copy
     $files_to_copy = [
 		'variation.php',
         'variable.php',
@@ -47,6 +48,7 @@ function smarty_copy_files_to_child_theme($debug = false) {
         'variable-product-standard-variations.php',
     ];
 
+    // Define the source and destination directories
     $source_directory = plugin_dir_path( __FILE__ ) . '/templates/woocommerce/single-product/add-to-cart/';
     $destination_directory = get_stylesheet_directory() . '/woocommerce/single-product/add-to-cart/';
 
@@ -55,16 +57,20 @@ function smarty_copy_files_to_child_theme($debug = false) {
         mkdir($destination_directory, 0755, true);
     }
 
+    // Loop through each file and copy it
     foreach ($files_to_copy as $file_name) {
         $source_path = $source_directory . $file_name;
         $destination_path = $destination_directory . $file_name;
 
+        // Check if the source file exists
         if (file_exists($source_path)) {
-            if (!copy($source_path, $destination_path) && $debug) {
+            // Use the built-in PHP copy function to copy the file
+            if (copy($source_path, $destination_path)) {
+                echo 'Copied file: ' . $file_name . '<br>';
+            } else {
                 echo 'Error: Unable to copy file: ' . $file_name . '<br>';
-                print_r(error_get_last());
             }
-        } else if ($debug) {
+        } else {
             echo 'Error: Source file not found: ' . $file_name . '<br>';
         }
     }
@@ -138,6 +144,7 @@ function smarty_get_attr_fields($attr_id) {
  */
 function smarty_variable_price_range($wc_variable_price, $product) {
   	$prefix = '';
+    $wc_variable_min_sale_price = null;
   	$wc_variable_reg_min_price = $product->get_variation_regular_price('min', true);
   	$wc_variable__min_sale_price = $product->get_variation_sale_price('min', true);
   	$wc_variable__max_price = $product->get_variation_price('max', true);
@@ -254,3 +261,239 @@ function smarty_free_delivery_amount() {
     // Return the lowest found minimum amount, or a default if none is set
     return ($minimum_free_delivery_amount !== PHP_INT_MAX) ? $minimum_free_delivery_amount : 0;
 }
+
+/**
+ * This function adds two custom text input fields to WooCommerce 
+ * product variation forms in the admin panel. 
+ */
+function smarty_add_custom_fields_to_variations($loop, $variation_data, $variation) {
+    // Custom field for Label 1
+    woocommerce_wp_text_input(array(
+        'id' => 'smarty_label_1[' . $variation->ID . ']', 
+        'label' => __('Label 1', 'smarty-custom-upsell-products-design'), 
+        'description' => __('Enter the label for example: `Best Seller`', 'smarty-custom-upsell-products-design'),
+        'desc_tip' => true,
+        'value' => get_post_meta($variation->ID, '_smarty_label_1', true),
+        'wrapper_class' => 'form-row form-row-first'
+    ));
+
+    // Custom field for Label 2
+    woocommerce_wp_text_input(array(
+        'id' => 'smarty_label_2[' . $variation->ID . ']', 
+        'label' => __('Label 2', 'smarty-custom-upsell-products-design'), 
+        'description' => __('Enter the label for example: `Best Value`', 'smarty-custom-upsell-products-design'),
+        'desc_tip' => true,
+        'value' => get_post_meta($variation->ID, '_smarty_label_2', true),
+        'wrapper_class' => 'form-row form-row-last'
+    ));
+}
+add_action('woocommerce_product_after_variable_attributes', 'smarty_add_custom_fields_to_variations', 10, 3);
+
+/**
+ * This function handles the saving of data entered into the custom fields 
+ * ('Label 1' and 'Label 2') for each product variation.
+ */
+function smarty_save_custom_fields_variations($variation_id, $i) {
+    // Save Best Seller Label
+    if (isset($_POST['smarty_label_1'][$variation_id])) {
+        update_post_meta($variation_id, '_smarty_label_1', sanitize_text_field($_POST['smarty_label_1'][$variation_id]));
+    }
+
+    // Save Best Value Label
+    if (isset($_POST['smarty_label_2'][$variation_id])) {
+        update_post_meta($variation_id, '_smarty_label_2', sanitize_text_field($_POST['smarty_label_2'][$variation_id]));
+    }
+}
+add_action('woocommerce_save_product_variation', 'smarty_save_custom_fields_variations', 10, 2);
+
+/**
+ * Outputs custom CSS to the head of single product pages.
+ *
+ * This function is hooked into the 'wp_head' action hook, so it runs
+ * whenever the head section of the site is generated. It checks if the
+ * current page is a single product page, and if so, it outputs a block
+ * of CSS styles to the head of the page.
+ *
+ * You can modify the CSS styles within the function to suit your needs.
+ */
+function smarty_custom_css() {
+    if (is_admin()) {
+        echo '<style>
+        .woocommerce_variation .form-row {
+            overflow: hidden;
+        }
+        .woocommerce_variation .form-row.full {
+            clear: both;
+        }
+        .woocommerce_variation .form-row.form-row-first,
+        .woocommerce_variation .form-row.form-row-last {
+            width: 49%;
+            float: left;
+            box-sizing: border-box;
+        }
+        </style>';
+    }
+
+    if (is_product()) {
+        echo '<style>
+        .product-single .product__actions .product__actions__inner {
+            border: none;
+        }
+        
+        .product-single .product__actions .quantity input
+        .woocommerce-variation-add-to-cart .variations_button .woocommerce-variation-add-to-cart-enabled .quantity,
+        .checkmark {
+            display: none;
+        }
+        
+        .main_title_wrap {
+            position: relative;
+            height: 115px;
+            padding-left: 15px;
+            margin: 30px 0;
+            box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+            -webkit-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+            -moz-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+            transition: all 0.3s ease-in;
+            border-radius: 5px;
+            border: 2px solid #ffffff00;
+        }
+        
+        .main_title_wrap .var_txt {
+            position: absolute;
+            top: 24px;
+             width: 100%;
+        }
+        
+        .price {
+            color: #709900;
+            font-weight: bold;
+        }
+        
+        .old_price {
+            text-decoration: line-through;
+            color: #dd5444;
+            font-weight: bold;
+        }
+        
+        .main_title_wrap input {
+            position: absolute;
+            top: 27px;
+        }
+        
+        .variable_content {
+            margin-top: 45px;
+        }
+        
+        .variable_title {
+            margin-left: 24px !important;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        
+        .variable_desc {
+            font-size: 14px;
+        }
+        
+        .variable_img {
+            width: 16%;
+            float: right;
+            margin-top: 20px;
+            margin-right: 10px;
+        }
+        
+        .product-single .product__actions .single_variation_wrap .woocommerce-variation {
+            height: 40px;
+            padding: 12px 50px 20px 160px;
+        }
+
+        .label_1 {
+            font-size: 13px;
+            color: #ffffff;
+            font-weight: 600;
+            position: absolute;
+            top: 0;
+            right: 0;
+            border-radius: 0 0 0 75px;
+            padding: 0 18px;
+            background: #ffc045;
+        }
+
+        .label_2 {
+            font-size: 13px;
+            color: #ffffff;
+            font-weight: 600;
+            position: absolute;
+            top: 0;
+            right: 0;
+            border-radius: 0 0 0 75px;
+            padding: 0 18px;
+            background: #3f4ba4;
+        }
+        
+        .free_delivery {
+            font-size: 13px;
+            color: #ffffff;
+            font-weight: 600;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-radius: 0 0 75px 0;
+            padding: 0 18px;
+            background: #709900;
+        }
+        
+        .active .main_title_wrap {
+            background: rgba(210, 184, 133, 0.3);
+            border: 2px solid #D2B885;
+        }
+        </style>';
+    }
+}
+add_action('wp_head', 'smarty_custom_css');
+
+/**
+ * This function adds custom JavaScript to the WooCommerce product 
+ * edit screen in the WordPress admin. 
+ */
+function smarty_admin_custom_js() {
+    if ('product' != get_post_type()) {
+        return;
+    }
+    ?>
+    <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            function toggleLabelInputs() {
+                // Check the value of each field and disable or enable the other accordingly
+                $('.woocommerce_variation').each(function() {
+                    var labelOneInput = $(this).find('[id^="smarty_label_1"]');
+                    var labelTwoInput = $(this).find('[id^="smarty_label_2"]');
+
+                    if (labelOneInput.val() != '') {
+                        labelTwoInput.prop('disabled', true);
+                    } else {
+                        labelTwoInput.prop('disabled', false);
+                    }
+
+                    if (labelTwoInput.val() != '') {
+                        labelOneInput.prop('disabled', true);
+                    } else {
+                        labelOneInput.prop('disabled', false);
+                    }
+                });
+            }
+
+            // Run the toggle function when WooCommerce variations are loaded
+            $(document).on('woocommerce_variations_loaded', function() {
+                toggleLabelInputs();
+            });
+
+            // Bind the toggle function to the keyup event of each input field
+            $(document).on('keyup', '[id^="smarty_label_1"], [id^="smarty_label_2"]', function() {
+                toggleLabelInputs();
+            });
+        });
+    </script>
+    <?php
+}
+add_action('admin_footer', 'smarty_admin_custom_js');

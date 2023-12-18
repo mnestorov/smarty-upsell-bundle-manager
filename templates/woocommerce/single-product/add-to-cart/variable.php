@@ -30,7 +30,7 @@ if (count(wc_get_attribute_taxonomies()) > 0 && isset($attribute_keys[0])) {
 
 // Local Pricing Logic
 $currency = get_woocommerce_currency_symbol();
-$local_prices = function_exists('mn_get_location_country') ? mn_get_location_country() : [];
+$local_prices = function_exists('smarty_get_location_country') ? smarty_get_location_country() : [];
 $sa_region_id  = $_COOKIE['sa_region_id'] ?? null;
 
 if (is_array($local_prices) && isset($local_prices[$sa_region_id])) {
