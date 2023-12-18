@@ -59,8 +59,19 @@ if ($up_sell_design) :
                                                     <span class="price old_price" style="visibility:visible;word-spacing:normal;"><?= number_format($regular_price, 2) . ' ' . $currency; ?></span>
                                                 <?php endif; ?>
                                                 <span class="price" style="visibility:visible;word-spacing:normal;"><?= number_format($price, 2); ?> <?= $currency; ?></span>
+                                                
+                                                <?php $label_1 = get_post_meta($v, '_smarty_label_1', true); ?>
+                                                <?php if (!empty($label_1)) { ?>
+                                                    <div class="label_1"><?= esc_html($label_1); ?></div>
+                                                <?php } ?>
+
+                                                <?php $label_2 = get_post_meta($v, '_smarty_label_2', true); ?>
+                                                <?php if (!empty($label_2)) { ?>
+                                                    <div class="label_2"><?= esc_html($label_2); ?></div>
+                                                <?php } ?>
+                                                
                                                 <?php if (!is_null($free_delivery_amount) && $price > $free_delivery_amount) : ?>
-                                                    <span class="free_delivery"><?= __('Free delivery', 'mn-wp-custom-upsell-products-design'); ?></span>
+                                                    <span class="free_delivery"><?= __('Free delivery', 'smarty-custom-upsell-products-design'); ?></span>
                                                 <?php endif; ?>
                                             </div>
                                         </div>

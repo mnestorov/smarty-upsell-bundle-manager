@@ -263,6 +263,50 @@ function smarty_free_delivery_amount() {
 }
 
 /**
+ * This function adds two custom text input fields to WooCommerce 
+ * product variation forms in the admin panel. 
+ */
+function smarty_add_custom_fields_to_variations($loop, $variation_data, $variation) {
+    // Custom field for Label 1
+    woocommerce_wp_text_input(array(
+        'id' => 'smarty_label_1[' . $variation->ID . ']', 
+        'label' => __('Label 1', 'smarty-custom-upsell-products-design'), 
+        'description' => __('Enter the label for example: `Best Seller`', 'smarty-custom-upsell-products-design'),
+        'desc_tip' => true,
+        'value' => get_post_meta($variation->ID, '_smarty_label_1', true),
+        'wrapper_class' => 'form-row form-row-first'
+    ));
+
+    // Custom field for Label 2
+    woocommerce_wp_text_input(array(
+        'id' => 'smarty_label_2[' . $variation->ID . ']', 
+        'label' => __('Label 2', 'smarty-custom-upsell-products-design'), 
+        'description' => __('Enter the label for example: `Best Value`', 'smarty-custom-upsell-products-design'),
+        'desc_tip' => true,
+        'value' => get_post_meta($variation->ID, '_smarty_label_2', true),
+        'wrapper_class' => 'form-row form-row-last'
+    ));
+}
+add_action('woocommerce_product_after_variable_attributes', 'smarty_add_custom_fields_to_variations', 10, 3);
+
+/**
+ * This function handles the saving of data entered into the custom fields 
+ * ('Label 1' and 'Label 2') for each product variation.
+ */
+function smarty_save_custom_fields_variations($variation_id, $i) {
+    // Save Best Seller Label
+    if (isset($_POST['smarty_label_1'][$variation_id])) {
+        update_post_meta($variation_id, '_smarty_label_1', sanitize_text_field($_POST['smarty_label_1'][$variation_id]));
+    }
+
+    // Save Best Value Label
+    if (isset($_POST['smarty_label_2'][$variation_id])) {
+        update_post_meta($variation_id, '_smarty_label_2', sanitize_text_field($_POST['smarty_label_2'][$variation_id]));
+    }
+}
+add_action('woocommerce_save_product_variation', 'smarty_save_custom_fields_variations', 10, 2);
+
+/**
  * Outputs custom CSS to the head of single product pages.
  *
  * This function is hooked into the 'wp_head' action hook, so it runs
@@ -273,6 +317,23 @@ function smarty_free_delivery_amount() {
  * You can modify the CSS styles within the function to suit your needs.
  */
 function smarty_custom_css() {
+    if (is_admin()) {
+        echo '<style>
+        .woocommerce_variation .form-row {
+            overflow: hidden;
+        }
+        .woocommerce_variation .form-row.full {
+            clear: both;
+        }
+        .woocommerce_variation .form-row.form-row-first,
+        .woocommerce_variation .form-row.form-row-last {
+            width: 49%;
+            float: left;
+            box-sizing: border-box;
+        }
+        </style>';
+    }
+
     if (is_product()) {
         echo '<style>
         .product-single .product__actions .product__actions__inner {
@@ -282,42 +343,42 @@ function smarty_custom_css() {
         .product-single .product__actions .quantity input
         .woocommerce-variation-add-to-cart .variations_button .woocommerce-variation-add-to-cart-enabled .quantity,
         .checkmark {
-                display: none;
+            display: none;
         }
         
         .main_title_wrap {
-                position: relative;
+            position: relative;
             height: 115px;
-                padding-left: 15px;
-                margin: 30px 0;
-                box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
-                -webkit-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
-                -moz-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
-                transition: all 0.3s ease-in;
-                border-radius: 5px;
-                border: 2px solid #ffffff00;
+            padding-left: 15px;
+            margin: 30px 0;
+            box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+            -webkit-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+            -moz-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+            transition: all 0.3s ease-in;
+            border-radius: 5px;
+            border: 2px solid #ffffff00;
         }
         
         .main_title_wrap .var_txt {
-                position: absolute;
-                top: 24px;
-                width: 100%;
+            position: absolute;
+            top: 24px;
+             width: 100%;
         }
         
         .price {
-                color: #00A651;
-                font-weight: bold;
+            color: #709900;
+            font-weight: bold;
         }
         
         .old_price {
             text-decoration: line-through;
-            color: #c00;
+            color: #dd5444;
             font-weight: bold;
         }
         
         .main_title_wrap input {
-                position: absolute;
-                top: 27px;
+            position: absolute;
+            top: 27px;
         }
         
         .variable_content {
@@ -325,25 +386,49 @@ function smarty_custom_css() {
         }
         
         .variable_title {
-                margin-left: 24px !important;
-                font-size: 16px;
-                font-weight: 700;
+            margin-left: 24px !important;
+            font-size: 16px;
+            font-weight: 700;
         }
         
         .variable_desc {
-                font-size: 14px;
+            font-size: 14px;
         }
         
         .variable_img {
-                width: 16%;
-                float: right;
-                margin-top: 10px;
-                margin-right: 10px;
+            width: 16%;
+            float: right;
+            margin-top: 20px;
+            margin-right: 10px;
         }
         
         .product-single .product__actions .single_variation_wrap .woocommerce-variation {
-                height: 40px;
-                padding: 12px 50px 20px 160px;
+            height: 40px;
+            padding: 12px 50px 20px 160px;
+        }
+
+        .label_1 {
+            font-size: 13px;
+            color: #ffffff;
+            font-weight: 600;
+            position: absolute;
+            top: 0;
+            right: 0;
+            border-radius: 0 0 0 75px;
+            padding: 0 18px;
+            background: #ffc045;
+        }
+
+        .label_2 {
+            font-size: 13px;
+            color: #ffffff;
+            font-weight: 600;
+            position: absolute;
+            top: 0;
+            right: 0;
+            border-radius: 0 0 0 75px;
+            padding: 0 18px;
+            background: #3f4ba4;
         }
         
         .free_delivery {
@@ -353,16 +438,62 @@ function smarty_custom_css() {
             position: absolute;
             top: 0;
             left: 0;
-            border-radius: 15px 15px 75px 3px;
+            border-radius: 0 0 75px 0;
             padding: 0 18px;
-            background: #00A651;
+            background: #709900;
         }
         
         .active .main_title_wrap {
-                background: rgba(210, 184, 133, 0.3);
-                border: 2px solid #D2B885;
+            background: rgba(210, 184, 133, 0.3);
+            border: 2px solid #D2B885;
         }
         </style>';
     }
 }
 add_action('wp_head', 'smarty_custom_css');
+
+/**
+ * This function adds custom JavaScript to the WooCommerce product 
+ * edit screen in the WordPress admin. 
+ */
+function smarty_admin_custom_js() {
+    if ('product' != get_post_type()) {
+        return;
+    }
+    ?>
+    <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            function toggleLabelInputs() {
+                // Check the value of each field and disable or enable the other accordingly
+                $('.woocommerce_variation').each(function() {
+                    var labelOneInput = $(this).find('[id^="smarty_label_1"]');
+                    var labelTwoInput = $(this).find('[id^="smarty_label_2"]');
+
+                    if (labelOneInput.val() != '') {
+                        labelTwoInput.prop('disabled', true);
+                    } else {
+                        labelTwoInput.prop('disabled', false);
+                    }
+
+                    if (labelTwoInput.val() != '') {
+                        labelOneInput.prop('disabled', true);
+                    } else {
+                        labelOneInput.prop('disabled', false);
+                    }
+                });
+            }
+
+            // Run the toggle function when WooCommerce variations are loaded
+            $(document).on('woocommerce_variations_loaded', function() {
+                toggleLabelInputs();
+            });
+
+            // Bind the toggle function to the keyup event of each input field
+            $(document).on('keyup', '[id^="smarty_label_1"], [id^="smarty_label_2"]', function() {
+                toggleLabelInputs();
+            });
+        });
+    </script>
+    <?php
+}
+add_action('admin_footer', 'smarty_admin_custom_js');
