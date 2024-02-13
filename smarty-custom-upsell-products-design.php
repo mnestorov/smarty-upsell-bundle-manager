@@ -12,6 +12,11 @@
  * WC tested up to: 5.1.0
  */
 
+// If this file is called directly, abort.
+if (!defined('WPINC')) {
+	die;
+}
+
 /**
  * Copies specific files from a plugin directory to a child theme directory in WordPress.
  * 
