@@ -25,7 +25,7 @@ This plugin enhances the user experience by offering a customized display of pro
 
 ## Installation
 
-1. Upload the plugin files to the `/wp-content/plugins/mn-wp-custom-upsell-products-design`` directory, or install the plugin through the WordPress plugins screen directly.
+1. Upload the plugin files to the `/wp-content/plugins/smarty-custom-upsell-products-design`` directory, or install the plugin through the WordPress plugins screen directly.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
 3. Go to the Products->Attributes, create new attribute, click on Edit and you will see the "Custom Upsell" design option on the left side.
 
