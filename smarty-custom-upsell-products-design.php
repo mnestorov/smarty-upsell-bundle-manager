@@ -22,7 +22,7 @@ if (!function_exists('smarty_register_settings_page')) {
         add_submenu_page(
             'woocommerce',
             __('Custom Upsell Products Design | Settings', 'smarty-custom-upsell-products-design'),
-            __('Upsell Settings', 'smarty-custom-upsell-products-design'),
+            __('Upsell Products Design', 'smarty-custom-upsell-products-design'),
             'manage_options',
             'smarty-custom-upsell-settings',
             'smarty_settings_page_content',
@@ -52,11 +52,13 @@ if (!function_exists('smarty_register_settings')) {
         register_setting('smarty_settings_group', 'smarty_label_2_font_size');
         register_setting('smarty_settings_group', 'smarty_currency_symbol_position');
         register_setting('smarty_settings_group', 'smarty_currency_symbol_spacing');
+        register_setting('smarty_settings_group', 'smarty_savings_text_size');
+        register_setting('smarty_settings_group', 'smarty_savings_text_color');
 
         // Add settings sections
         add_settings_section('smarty_colors_section', 'Colors', 'smarty_colors_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_font_sizes_section', 'Font Sizes', 'smarty_font_sizes_section_cb', 'smarty_settings_page');
-        add_settings_section('smarty_currency_section', 'Currency Settings', 'smarty_currency_section_cb', 'smarty_settings_page');
+        add_settings_section('smarty_currency_section', 'Currency Symbol', 'smarty_currency_section_cb', 'smarty_settings_page');
 
         // Add settings fields for colors
         add_settings_field('smarty_active_bg_color', 'Upsell (Background)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_active_bg_color']);
@@ -77,10 +79,14 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_field('smarty_free_delivery_font_size', 'Free Delivery', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_free_delivery_font_size']);
         add_settings_field('smarty_label_1_font_size', 'Label 1', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_label_1_font_size']);
         add_settings_field('smarty_label_2_font_size', 'Label 2', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_label_2_font_size']);
-    
+        
+        // Add settings fields for savings text
+        add_settings_field('smarty_savings_text_size', 'Savings Text', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_savings_text_size']);
+        add_settings_field('smarty_savings_text_color', 'Savings Text', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_savings_text_color']);
+
         // Add settings fields for currency
-        add_settings_field('smarty_currency_symbol_position', 'Currency Symbol Position', 'smarty_currency_position_field_cb', 'smarty_settings_page', 'smarty_currency_section', ['id' => 'smarty_currency_symbol_position']);
-        add_settings_field('smarty_currency_symbol_spacing', 'Currency Symbol Spacing', 'smarty_currency_spacing_field_cb', 'smarty_settings_page', 'smarty_currency_section', ['id' => 'smarty_currency_symbol_spacing']);
+        add_settings_field('smarty_currency_symbol_position', 'Position', 'smarty_currency_position_field_cb', 'smarty_settings_page', 'smarty_currency_section', ['id' => 'smarty_currency_symbol_position']);
+        add_settings_field('smarty_currency_symbol_spacing', 'Spacing', 'smarty_currency_spacing_field_cb', 'smarty_settings_page', 'smarty_currency_section', ['id' => 'smarty_currency_symbol_spacing']);
     }
     add_action('admin_init', 'smarty_register_settings');
 }
@@ -498,6 +504,8 @@ if (!function_exists('smarty_custom_css')) {
         $free_delivery_font_size = get_option('smarty_free_delivery_font_size', '14');
         $label_1_font_size = get_option('smarty_label_1_font_size', '14');
         $label_2_font_size = get_option('smarty_label_2_font_size', '14');
+        $savings_text_size = get_option('smarty_savings_text_size', '14') . 'px';
+        $savings_text_color = get_option('smarty_savings_text_color', '#000000');
     
         if (is_admin()) {
             echo '<style>
@@ -586,11 +594,17 @@ if (!function_exists('smarty_custom_css')) {
                 font-size: ' . esc_attr($variable_desc_font_size) . 'px;
             }
             
-            .variable_img {
+            .main_title_wrap .variable_img {
                 width: 16%;
                 float: right;
-                margin-top: 20px;
+                margin-top: 25px;
                 margin-right: 10px;
+                border: 1px solid rgba(51, 51, 51, .2);
+                border-radius: 5px;
+            }
+
+            .variations_form .variations {
+                padding-top: 0;
             }
             
             .product-single .product__actions .single_variation_wrap .woocommerce-variation {
@@ -632,6 +646,11 @@ if (!function_exists('smarty_custom_css')) {
                 border-radius: 0 0 75px 0;
                 padding: 0 18px;
                 background: ' . esc_attr($free_delivery_bg_color) . ';
+            }
+
+            .savings-text {
+                font-size: ' . esc_attr($savings_text_size) . ';
+                color: ' . esc_attr($savings_text_color) . ';
             }
             </style>';
         }
@@ -693,6 +712,11 @@ if (!function_exists('smarty_public_custom_js')) {
         $currency_position = get_option('smarty_currency_symbol_position', 'left');
         $currency_spacing = get_option('smarty_currency_symbol_spacing', 'no_space');
         $spacing = $currency_spacing === 'space' ? ' ' : '';
+
+        // Get savings text settings
+        $savings_text_size = get_option('smarty_savings_text_size', '14') . 'px';
+        $savings_text_color = get_option('smarty_savings_text_color', '#000000');
+
         ?>
         <script type="text/javascript">
             jQuery(document).ready(function($) {
@@ -709,14 +733,22 @@ if (!function_exists('smarty_public_custom_js')) {
                 var currencySymbol = '<?php echo $currency_symbol; ?>';
                 var currencyPosition = '<?php echo $currency_position; ?>';
                 var currencySpacing = '<?php echo $spacing; ?>';
+                var savingsTextSize = '<?php echo $savings_text_size; ?>';
+                var savingsTextColor = '<?php echo $savings_text_color; ?>';
 
                 // Format the price according to the settings
-                function formatPrice(price) {
-                    if (currencyPosition === 'left') {
+                function formatPrice(price, isRegular) {
+                    if (isRegular || currencyPosition === 'left') {
                         return currencySymbol + currencySpacing + price;
                     } else {
                         return price + currencySpacing + currencySymbol;
                     }
+                }
+
+                // Format the savings message
+                function formatSavings(regularPrice, salePrice) {
+                    var savings = regularPrice - salePrice;
+                    return '<span class="savings-text" style="font-size:' + savingsTextSize + '; color:' + savingsTextColor + ';">(you save ' + formatPrice(savings.toFixed(2), false) + ')</span>';
                 }
 
                 // Call the function to set the active upsell on page load
@@ -728,11 +760,25 @@ if (!function_exists('smarty_public_custom_js')) {
                     $(this).addClass('active'); // Add active class to clicked upsell
                 });
 
-                // Apply the formatted price to the price elements
-                $('.price, .old_price').each(function() {
-                    var priceText = $(this).text().replace(/[^\d.]/g, ''); // Remove non-numeric characters
-                    var formattedPrice = formatPrice(priceText);
-                    $(this).text(formattedPrice);
+                // Apply the formatted price to the price elements and show savings
+                $('.price:not(.old_price)').each(function() {
+                    var regularPriceText = $(this).closest('.main_title_wrap').find('.old_price').text().replace(/[^\d.]/g, '');
+                    var salePriceText = $(this).text().replace(/[^\d.]/g, '');
+
+                    if (regularPriceText && salePriceText) {
+                        var regularPrice = parseFloat(regularPriceText);
+                        var salePrice = parseFloat(salePriceText);
+
+                        var formattedRegularPrice = formatPrice(regularPrice.toFixed(2), true); // Force left position for regular price
+                        var formattedSalePrice = formatPrice(salePrice.toFixed(2), false);
+                        var savingsMessage = formatSavings(regularPrice, salePrice);
+
+                        $(this).closest('.main_title_wrap').find('.old_price').text(formattedRegularPrice);
+                        $(this).html(formattedSalePrice + ' ' + savingsMessage);
+                    } else {
+                        var priceText = $(this).text().replace(/[^\d.]/g, '');
+                        $(this).text(formatPrice(priceText, $(this).hasClass('old_price')));
+                    }
                 });
             });
         </script>
