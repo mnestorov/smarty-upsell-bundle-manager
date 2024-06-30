@@ -6,7 +6,7 @@ if ($up_sell_design) :
         if (taxonomy_exists($attribute_name)) :
             $terms = wc_get_product_terms($product->get_id(), $attribute_name, ['fields' => 'all']);
             ?>
-            <div class="product_variation_section variations">
+            <div class="product_variation_section variations upsell-container">
                 <div class="variation_row" id="variation_select">
                     <div class="swatches-select variation_sub">
                         <?php

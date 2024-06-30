@@ -761,7 +761,7 @@ if (!function_exists('smarty_public_custom_js')) {
                 });
 
                 // Apply the formatted price to the price elements and show savings
-                $('.price:not(.old_price)').each(function() {
+                $('.upsell-container .price:not(.old_price)').each(function() {
                     var regularPriceText = $(this).closest('.main_title_wrap').find('.old_price').text().replace(/[^\d.]/g, '');
                     var salePriceText = $(this).text().replace(/[^\d.]/g, '');
 
