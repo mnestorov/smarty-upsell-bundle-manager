@@ -590,7 +590,7 @@ if (!function_exists('smarty_custom_css')) {
                 font-weight: 700;
             }
             
-            variable_desc {
+            .variable_desc {
                 font-size: ' . esc_attr($variable_desc_font_size) . 'px;
             }
             
