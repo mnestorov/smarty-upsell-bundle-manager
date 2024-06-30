@@ -9,7 +9,7 @@
  * Text Domain: smarty-custom-upsell-products-design
  * Domain Path: /languages/
  * WC requires at least: 3.0.0
- * WC tested up to: 5.1.0
+ * WC tested up to: 6.1.0
  */
 
 // If this file is called directly, abort.
@@ -50,10 +50,13 @@ if (!function_exists('smarty_register_settings')) {
         register_setting('smarty_settings_group', 'smarty_free_delivery_font_size');
         register_setting('smarty_settings_group', 'smarty_label_1_font_size');
         register_setting('smarty_settings_group', 'smarty_label_2_font_size');
+        register_setting('smarty_settings_group', 'smarty_currency_symbol_position');
+        register_setting('smarty_settings_group', 'smarty_currency_symbol_spacing');
 
         // Add settings sections
         add_settings_section('smarty_colors_section', 'Colors', 'smarty_colors_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_font_sizes_section', 'Font Sizes', 'smarty_font_sizes_section_cb', 'smarty_settings_page');
+        add_settings_section('smarty_currency_section', 'Currency Settings', 'smarty_currency_section_cb', 'smarty_settings_page');
 
         // Add settings fields for colors
         add_settings_field('smarty_active_bg_color', 'Upsell (Background)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_active_bg_color']);
@@ -74,6 +77,10 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_field('smarty_free_delivery_font_size', 'Free Delivery', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_free_delivery_font_size']);
         add_settings_field('smarty_label_1_font_size', 'Label 1', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_label_1_font_size']);
         add_settings_field('smarty_label_2_font_size', 'Label 2', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_label_2_font_size']);
+    
+        // Add settings fields for currency
+        add_settings_field('smarty_currency_symbol_position', 'Currency Symbol Position', 'smarty_currency_position_field_cb', 'smarty_settings_page', 'smarty_currency_section', ['id' => 'smarty_currency_symbol_position']);
+        add_settings_field('smarty_currency_symbol_spacing', 'Currency Symbol Spacing', 'smarty_currency_spacing_field_cb', 'smarty_settings_page', 'smarty_currency_section', ['id' => 'smarty_currency_symbol_spacing']);
     }
     add_action('admin_init', 'smarty_register_settings');
 }
@@ -95,6 +102,26 @@ function smarty_font_size_field_cb($args) {
     $option = get_option($args['id'], '14');
     echo '<input type="range" name="' . $args['id'] . '" min="10" max="30" value="' . esc_attr($option) . '" class="smarty-font-size-slider" />';
     echo '<span id="' . $args['id'] . '-value">' . esc_attr($option) . 'px</span>';
+}
+
+function smarty_currency_section_cb() {
+    echo '<p>Customize the currency symbol position and spacing for your WooCommerce upsell products.</p>';
+}
+
+function smarty_currency_position_field_cb($args) {
+    $option = get_option($args['id'], 'left');
+    echo '<select name="' . $args['id'] . '">';
+    echo '<option value="left"' . selected($option, 'left', false) . '>Left</option>';
+    echo '<option value="right"' . selected($option, 'right', false) . '>Right</option>';
+    echo '</select>';
+}
+
+function smarty_currency_spacing_field_cb($args) {
+    $option = get_option($args['id'], 'no_space');
+    echo '<select name="' . $args['id'] . '">';
+    echo '<option value="space"' . selected($option, 'space', false) . '>With Space</option>';
+    echo '<option value="no_space"' . selected($option, 'no_space', false) . '>Without Space</option>';
+    echo '</select>';
 }
 
 if (!function_exists('smarty_settings_page_content')) {
@@ -662,6 +689,10 @@ if (!function_exists('smarty_admin_custom_js')) {
 
 if (!function_exists('smarty_public_custom_js')) {
     function smarty_public_custom_js() {
+        $currency_symbol = html_entity_decode(get_woocommerce_currency_symbol());
+        $currency_position = get_option('smarty_currency_symbol_position', 'left');
+        $currency_spacing = get_option('smarty_currency_symbol_spacing', 'no_space');
+        $spacing = $currency_spacing === 'space' ? ' ' : '';
         ?>
         <script type="text/javascript">
             jQuery(document).ready(function($) {
@@ -674,6 +705,20 @@ if (!function_exists('smarty_public_custom_js')) {
                     }
                 }
 
+                // Currency settings
+                var currencySymbol = '<?php echo $currency_symbol; ?>';
+                var currencyPosition = '<?php echo $currency_position; ?>';
+                var currencySpacing = '<?php echo $spacing; ?>';
+
+                // Format the price according to the settings
+                function formatPrice(price) {
+                    if (currencyPosition === 'left') {
+                        return currencySymbol + currencySpacing + price;
+                    } else {
+                        return price + currencySpacing + currencySymbol;
+                    }
+                }
+
                 // Call the function to set the active upsell on page load
                 setActiveUpsell();
 
@@ -681,6 +726,13 @@ if (!function_exists('smarty_public_custom_js')) {
                 $('.main_title_wrap').on('click', function() {
                     $('.main_title_wrap').removeClass('active'); // Remove active class from all upsells
                     $(this).addClass('active'); // Add active class to clicked upsell
+                });
+
+                // Apply the formatted price to the price elements
+                $('.price, .old_price').each(function() {
+                    var priceText = $(this).text().replace(/[^\d.]/g, ''); // Remove non-numeric characters
+                    var formattedPrice = formatPrice(priceText);
+                    $(this).text(formattedPrice);
                 });
             });
         </script>
