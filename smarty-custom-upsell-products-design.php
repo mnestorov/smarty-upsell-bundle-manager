@@ -777,72 +777,85 @@ if (!function_exists('smarty_public_custom_js')) {
         $currency_symbol = html_entity_decode(get_woocommerce_currency_symbol());
         $currency_position = get_option('smarty_currency_symbol_position', 'left');
         $currency_spacing = get_option('smarty_currency_symbol_spacing', 'no_space');
-        $spacing = $currency_spacing === 'space' ? ' ' : '';
+        $decimal_separator = wc_get_price_decimal_separator();
+        $thousand_separator = wc_get_price_thousand_separator();
+        $decimals = wc_get_price_decimals();
+        $spacing = ($currency_spacing === 'space') ? ' ' : '';
 
         // Get savings text settings
         $savings_text_size = get_option('smarty_savings_text_size', '14') . 'px';
         $savings_text_color = get_option('smarty_savings_text_color', '#000000');
 
+        // Translatable text for 'you save'
+        $youSaveText = esc_js(__('you save', 'smarty-custom-upsell-products-design'));
+
         ?>
         <script type="text/javascript">
             jQuery(document).ready(function($) {
                 function setActiveUpsell() {
-                    // Select the first variation label and add the active class
                     var firstVariation = $('.check_container.has_variations:first .main_title_wrap');
                     if (firstVariation.length) {
-                        $('.main_title_wrap').removeClass('active'); // Remove active class from all upsells
-                        firstVariation.addClass('active'); // Add active class to first upsell
+                        $('.main_title_wrap').removeClass('active');
+                        firstVariation.addClass('active');
                     }
                 }
 
-                // Currency settings
                 var currencySymbol = '<?php echo $currency_symbol; ?>';
                 var currencyPosition = '<?php echo $currency_position; ?>';
                 var currencySpacing = '<?php echo $spacing; ?>';
                 var savingsTextSize = '<?php echo $savings_text_size; ?>';
                 var savingsTextColor = '<?php echo $savings_text_color; ?>';
+                var decimalSeparator = '<?php echo $decimal_separator; ?>';
+                var thousandSeparator = '<?php echo $thousand_separator; ?>';
+                var decimals = <?php echo $decimals; ?>;
+                var youSaveText = '<?php echo $youSaveText; ?>';
 
-                // Format the price according to the settings
                 function formatPrice(price, isRegular) {
-                    if (isRegular || currencyPosition === 'left') {
-                        return currencySymbol + currencySpacing + price;
+                    var formattedPrice = parseFloat(price).toLocaleString(undefined, {
+                        minimumFractionDigits: decimals,
+                        maximumFractionDigits: decimals,
+                        style: 'decimal',
+                        useGrouping: true
+                    });
+
+                    formattedPrice = formattedPrice.replace('.', decimalSeparator);
+
+                    if (currencyPosition === 'left') {
+                        return currencySymbol + currencySpacing + formattedPrice;
                     } else {
-                        return price + currencySpacing + currencySymbol;
+                        return formattedPrice + currencySpacing + currencySymbol;
                     }
                 }
 
-                // Format the savings message
                 function formatSavings(regularPrice, salePrice) {
                     var savings = regularPrice - salePrice;
-                    return '<span class="savings-text" style="font-size:' + savingsTextSize + '; color:' + savingsTextColor + ';">(you save ' + formatPrice(savings.toFixed(2), false) + ')</span>';
+                    return '<span class="savings-text" style="font-size:' + savingsTextSize + '; color:' + savingsTextColor + ';">(' + youSaveText + ' ' + formatPrice(savings.toFixed(2), false) + ')</span>';
                 }
 
-                // Call the function to set the active upsell on page load
                 setActiveUpsell();
 
-                // Bind click event to upsell elements to set them active on click
                 $('.main_title_wrap').on('click', function() {
-                    $('.main_title_wrap').removeClass('active'); // Remove active class from all upsells
-                    $(this).addClass('active'); // Add active class to clicked upsell
+                    $('.main_title_wrap').removeClass('active');
+                    $(this).addClass('active');
                 });
 
-                // Apply the formatted price to the price elements and show savings
                 $('.upsell-container .price:not(.old_price)').each(function() {
-                    var regularPriceText = $(this).closest('.main_title_wrap').find('.old_price').text().replace(/[^\d.]/g, '');
-                    var salePriceText = $(this).text().replace(/[^\d.]/g, '');
+                    var regularPriceText = $(this).closest('.main_title_wrap').find('.old_price').text().replace(/[^\d.,]/g, '');
+                    var salePriceText = $(this).text().replace(/[^\d.,]/g, '');
 
                     if (regularPriceText && salePriceText) {
-                        var regularPrice = parseFloat(regularPriceText);
-                        var salePrice = parseFloat(salePriceText);
+                        var regularPrice = parseFloat(regularPriceText.replace(decimalSeparator, '.'));
+                        var salePrice = parseFloat(salePriceText.replace(decimalSeparator, '.'));
 
-                        var formattedRegularPrice = formatPrice(regularPrice.toFixed(2), true); // Force left position for regular price
+                        var formattedRegularPrice = formatPrice(regularPrice.toFixed(2), true);
                         var formattedSalePrice = formatPrice(salePrice.toFixed(2), false);
                         var savingsMessage = formatSavings(regularPrice, salePrice);
 
                         $(this).closest('.main_title_wrap').find('.old_price').text(formattedRegularPrice);
                         $(this).html(formattedSalePrice + ' ' + savingsMessage);
                     } else {
-                        var priceText = $(this).text().replace(/[^\d.]/g, '');
+                        var priceText = $(this).text().replace(/[^\d.,]/g, '');
+                        priceText = priceText.replace(decimalSeparator, '.');
                         $(this).text(formatPrice(priceText, $(this).hasClass('old_price')));
                     }
                 });
@@ -852,3 +865,4 @@ if (!function_exists('smarty_public_custom_js')) {
     }
     add_action('wp_head', 'smarty_public_custom_js');
 }
+
