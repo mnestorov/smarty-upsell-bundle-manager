@@ -17,6 +17,20 @@ if (!defined('WPINC')) {
 	die;
 }
 
+if (!function_exists('smarty_enqueue_scripts')) {
+    function smarty_enqueue_scripts($hook_suffix) {
+        // Only add to the admin page of the plugin
+        if ('woocommerce_page_smarty-custom-upsell-settings' !== $hook_suffix) {
+            return;
+        }
+
+        // Enqueue style and script for using the WordPress color picker.
+        wp_enqueue_style('wp-color-picker');
+        wp_enqueue_script('wp-color-picker');
+    }
+    add_action('admin_enqueue_scripts', 'smarty_enqueue_scripts');
+}
+
 if (!function_exists('smarty_register_settings_page')) {
     function smarty_register_settings_page() {
         add_submenu_page(
@@ -34,6 +48,7 @@ if (!function_exists('smarty_register_settings_page')) {
 if (!function_exists('smarty_register_settings')) {
     function smarty_register_settings() {
         // Register settings
+        register_setting('smarty_settings_group', 'smarty_debug_mode');
         register_setting('smarty_settings_group', 'smarty_active_bg_color');
         register_setting('smarty_settings_group', 'smarty_active_border_color');
         register_setting('smarty_settings_group', 'smarty_price_color');
@@ -54,12 +69,17 @@ if (!function_exists('smarty_register_settings')) {
         register_setting('smarty_settings_group', 'smarty_currency_symbol_spacing');
         register_setting('smarty_settings_group', 'smarty_savings_text_size');
         register_setting('smarty_settings_group', 'smarty_savings_text_color');
+        register_setting('smarty_settings_group', 'smarty_image_border_color');
 
         // Add settings sections
+        add_settings_section('smarty_settings_section', 'Debug', 'smarty_settings_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_colors_section', 'Colors', 'smarty_colors_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_font_sizes_section', 'Font Sizes', 'smarty_font_sizes_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_currency_section', 'Currency Symbol', 'smarty_currency_section_cb', 'smarty_settings_page');
 
+        // Add settings fields for debug mode
+        add_settings_field('smarty_debug_mode', 'Debug Mode', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_settings_section', ['id' => 'smarty_debug_mode']);
+        
         // Add settings fields for colors
         add_settings_field('smarty_active_bg_color', 'Upsell (Background)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_active_bg_color']);
         add_settings_field('smarty_active_border_color', 'Upsell (Border)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_active_border_color']);
@@ -71,6 +91,7 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_field('smarty_label_1_color', 'Label 1 (Text)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_label_1_color']);
         add_settings_field('smarty_label_2_bg_color', 'Label 2 (Background)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_label_2_bg_color']);
         add_settings_field('smarty_label_2_color', 'Label 2 (Text)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_label_2_color']);
+        add_settings_field('smarty_image_border_color', 'Image Border', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_image_border_color']);
 
         // Add settings fields for font sizes
         add_settings_field('smarty_price_font_size', 'Price', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_price_font_size']);
@@ -79,7 +100,7 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_field('smarty_free_delivery_font_size', 'Free Delivery', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_free_delivery_font_size']);
         add_settings_field('smarty_label_1_font_size', 'Label 1', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_label_1_font_size']);
         add_settings_field('smarty_label_2_font_size', 'Label 2', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_label_2_font_size']);
-        
+
         // Add settings fields for savings text
         add_settings_field('smarty_savings_text_size', 'Savings Text', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_savings_text_size']);
         add_settings_field('smarty_savings_text_color', 'Savings Text', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_savings_text_color']);
@@ -91,43 +112,71 @@ if (!function_exists('smarty_register_settings')) {
     add_action('admin_init', 'smarty_register_settings');
 }
 
-function smarty_colors_section_cb() {
-    echo '<p>Customize the colors for various elements in your WooCommerce upsell products.</p>';
+if (!function_exists('smarty_settings_section_cb')) {
+    function smarty_settings_section_cb() {
+        echo '<p>Adjust debug settings for the plugin.</p>';
+    }
 }
 
-function smarty_color_field_cb($args) {
-    $option = get_option($args['id'], '');
-    echo '<input type="text" name="' . $args['id'] . '" value="' . esc_attr($option) . '" class="smarty-color-field" data-default-color="' . esc_attr($option) . '" />';
+if (!function_exists('smarty_checkbox_field_cb')) {
+    function smarty_checkbox_field_cb($args) {
+        $option = get_option($args['id'], '');
+        $checked = checked(1, $option, false);
+        echo "<input type='checkbox' id='{$args['id']}' name='{$args['id']}' value='1' {$checked} />";
+    }
 }
 
-function smarty_font_sizes_section_cb() {
-    echo '<p>Customize the font sizes for various elements in your WooCommerce upsell products.</p>';
+if (!function_exists('smarty_colors_section_cb')) {
+    function smarty_colors_section_cb() {
+        echo '<p>Customize the colors for various elements in your WooCommerce upsell products.</p>';
+    }
 }
 
-function smarty_font_size_field_cb($args) {
-    $option = get_option($args['id'], '14');
-    echo '<input type="range" name="' . $args['id'] . '" min="10" max="30" value="' . esc_attr($option) . '" class="smarty-font-size-slider" />';
-    echo '<span id="' . $args['id'] . '-value">' . esc_attr($option) . 'px</span>';
+if (!function_exists('smarty_color_field_cb')) {
+    function smarty_color_field_cb($args) {
+        $option = get_option($args['id'], '');
+        echo '<input type="text" name="' . $args['id'] . '" value="' . esc_attr($option) . '" class="smarty-color-field" data-default-color="' . esc_attr($option) . '" />';
+    }
 }
 
-function smarty_currency_section_cb() {
-    echo '<p>Customize the currency symbol position and spacing for your WooCommerce upsell products.</p>';
+if (!function_exists('smarty_font_sizes_section_cb')) {
+    function smarty_font_sizes_section_cb() {
+        echo '<p>Customize the font sizes for various elements in your WooCommerce upsell products.</p>';
+    }
 }
 
-function smarty_currency_position_field_cb($args) {
-    $option = get_option($args['id'], 'left');
-    echo '<select name="' . $args['id'] . '">';
-    echo '<option value="left"' . selected($option, 'left', false) . '>Left</option>';
-    echo '<option value="right"' . selected($option, 'right', false) . '>Right</option>';
-    echo '</select>';
+if (!function_exists('smarty_font_size_field_cb')) {
+    function smarty_font_size_field_cb($args) {
+        $option = get_option($args['id'], '14');
+        echo '<input type="range" name="' . $args['id'] . '" min="10" max="30" value="' . esc_attr($option) . '" class="smarty-font-size-slider" />';
+        echo '<span id="' . $args['id'] . '-value">' . esc_attr($option) . 'px</span>';
+    }
 }
 
-function smarty_currency_spacing_field_cb($args) {
-    $option = get_option($args['id'], 'no_space');
-    echo '<select name="' . $args['id'] . '">';
-    echo '<option value="space"' . selected($option, 'space', false) . '>With Space</option>';
-    echo '<option value="no_space"' . selected($option, 'no_space', false) . '>Without Space</option>';
-    echo '</select>';
+if (!function_exists('smarty_currency_section_cb')) {
+    function smarty_currency_section_cb() {
+        echo '<p>Customize the currency symbol position and spacing for your WooCommerce upsell products.</p>';
+}
+}
+
+if (!function_exists('smarty_currency_position_field_cb')) {
+    function smarty_currency_position_field_cb($args) {
+        $option = get_option($args['id'], 'left');
+        echo '<select name="' . $args['id'] . '">';
+        echo '<option value="left"' . selected($option, 'left', false) . '>Left</option>';
+        echo '<option value="right"' . selected($option, 'right', false) . '>Right</option>';
+        echo '</select>';
+    }
+}
+
+if (!function_exists('smarty_currency_spacing_field_cb')) {
+    function smarty_currency_spacing_field_cb($args) {
+        $option = get_option($args['id'], 'no_space');
+        echo '<select name="' . $args['id'] . '">';
+        echo '<option value="space"' . selected($option, 'space', false) . '>With Space</option>';
+        echo '<option value="no_space"' . selected($option, 'no_space', false) . '>Without Space</option>';
+        echo '</select>';
+    }
 }
 
 if (!function_exists('smarty_settings_page_content')) {
@@ -140,7 +189,6 @@ if (!function_exists('smarty_settings_page_content')) {
                 settings_fields('smarty_settings_group');
                 do_settings_sections('smarty_settings_page');
                 ?>
-                <hr style="border-bottom: 2px solid #ccc;">
                 <?php submit_button(); ?>
             </form>
         </div>
@@ -191,6 +239,17 @@ if (!function_exists('smarty_copy_files_to_child_theme')) {
      * @return void Outputs messages based on success or failure of file copying when debugging is enabled.
      */
     function smarty_copy_files_to_child_theme($debug = false) {
+        // Retrieve debug setting
+        $debug = get_option('smarty_debug_mode', false);
+
+        // Only proceed if debugging is true
+        if (!$debug) {
+            add_action('admin_notices', function() {
+                echo "<div class='notice notice-info is-dismissible'><p>Debug mode is off, not copying files.</p></div>";
+            });
+            return; // Exit if debug mode is not true
+        }
+
         // Define an array of file names to copy
         $files_to_copy = [
             'variation.php',
@@ -198,41 +257,47 @@ if (!function_exists('smarty_copy_files_to_child_theme')) {
             'variable-product-upsell-design.php',
             'variable-product-standard-variations.php',
         ];
-
+    
         // Define the source and destination directories
-        $source_directory = plugin_dir_path( __FILE__ ) . '/templates/woocommerce/single-product/add-to-cart/';
+        $source_directory = plugin_dir_path(__FILE__) . '/templates/woocommerce/single-product/add-to-cart/';
         $destination_directory = get_stylesheet_directory() . '/woocommerce/single-product/add-to-cart/';
-
-        // Check if destination directory exists, if not create it
+    
+        // Check if destination directory exists, if not, create it
         if (!file_exists($destination_directory)) {
             mkdir($destination_directory, 0755, true);
         }
-
+    
         // Loop through each file and copy it
         foreach ($files_to_copy as $file_name) {
             $source_path = $source_directory . $file_name;
             $destination_path = $destination_directory . $file_name;
-
+    
             // Check if the source file exists
             if (file_exists($source_path)) {
-                // Use the built-in PHP copy function to copy the file
                 if (copy($source_path, $destination_path)) {
-                    echo 'Copied file: ' . $file_name . '<br>';
+                    // Set success message
+                    add_action('admin_notices', function() use ($file_name) {
+                        echo "<div class='notice notice-success is-dismissible'><p>Copied file: $file_name successfully.</p></div>";
+                    });
                 } else {
-                    echo 'Error: Unable to copy file: ' . $file_name . '<br>';
+                    // Set error message
+                    add_action('admin_notices', function() use ($file_name) {
+                        echo "<div class='notice notice-error is-dismissible'><p>Error: Unable to copy file: $file_name.</p></div>";
+                    });
                 }
             } else {
-                echo 'Error: Source file not found: ' . $file_name . '<br>';
+                // Set file not found message
+                add_action('admin_notices', function() use ($file_name) {
+                    echo "<div class='notice notice-warning is-dismissible'><p>Error: Source file not found: $file_name.</p></div>";
+                });
             }
         }
     }
 }
 
-// Use the function with debugging enabled
-//smarty_copy_files_to_child_theme(true);
-
-// Use the function without debugging (in production, for example)
-//smarty_copy_files_to_child_theme(false);
+// Use the function for debugging
+$debug = get_option('smarty_debug_mode', false) === '1'; // strict comparison
+smarty_copy_files_to_child_theme($debug);
 
 if (!function_exists('smarty_after_edit_attribute_fields')) {
     /**
@@ -506,6 +571,7 @@ if (!function_exists('smarty_custom_css')) {
         $label_2_font_size = get_option('smarty_label_2_font_size', '14');
         $savings_text_size = get_option('smarty_savings_text_size', '14') . 'px';
         $savings_text_color = get_option('smarty_savings_text_color', '#000000');
+        $image_border_color = get_option('smarty_image_border_color', '#000000');
     
         if (is_admin()) {
             echo '<style>
@@ -580,26 +646,26 @@ if (!function_exists('smarty_custom_css')) {
                 top: 27px;
             }
             
-            .variable_content {
+            .upsell-container .variable_content {
                 margin-top: 45px;
             }
             
-            .variable_title {
+            .upsell-container .variable_title {
                 margin-left: 24px !important;
                 font-size: 16px;
                 font-weight: 700;
             }
             
-            .variable_desc {
+            .upsell-container .variable_desc {
                 font-size: ' . esc_attr($variable_desc_font_size) . 'px;
             }
             
-            .main_title_wrap .variable_img {
+            .upsell-container .variable_img {
                 width: 16%;
                 float: right;
                 margin-top: 25px;
                 margin-right: 10px;
-                border: 1px solid rgba(51, 51, 51, .2);
+                border: 1px solid ' . esc_attr($image_border_color) . ';
                 border-radius: 5px;
             }
 
