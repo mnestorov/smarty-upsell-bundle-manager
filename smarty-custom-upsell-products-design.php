@@ -48,7 +48,6 @@ if (!function_exists('smarty_register_settings_page')) {
 if (!function_exists('smarty_register_settings')) {
     function smarty_register_settings() {
         // Register settings
-        register_setting('smarty_settings_group', 'smarty_debug_mode');
         register_setting('smarty_settings_group', 'smarty_active_bg_color');
         register_setting('smarty_settings_group', 'smarty_active_border_color');
         register_setting('smarty_settings_group', 'smarty_price_color');
@@ -71,20 +70,15 @@ if (!function_exists('smarty_register_settings')) {
         register_setting('smarty_settings_group', 'smarty_savings_text_color');
         register_setting('smarty_settings_group', 'smarty_image_border_color');
         register_setting('smarty_settings_group', 'smarty_display_savings');
+        register_setting('smarty_settings_group', 'smarty_debug_mode');
 
         // Add settings sections
-        add_settings_section('smarty_settings_section', 'Debug', 'smarty_settings_section_cb', 'smarty_settings_page');
-        add_settings_section('smarty_display_options_section', 'Display Options', 'smarty_display_options_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_colors_section', 'Colors', 'smarty_colors_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_font_sizes_section', 'Font Sizes', 'smarty_font_sizes_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_currency_section', 'Currency Symbol', 'smarty_currency_section_cb', 'smarty_settings_page');
-
-        // Add settings fields for debug mode
-        add_settings_field('smarty_debug_mode', 'Debug Mode', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_settings_section', ['id' => 'smarty_debug_mode']);
+        add_settings_section('smarty_display_options_section', 'Display Options', 'smarty_display_options_section_cb', 'smarty_settings_page');
+        add_settings_section('smarty_settings_section', 'Debug', 'smarty_settings_section_cb', 'smarty_settings_page');
         
-        // Add settings field for display options
-        add_settings_field('smarty_display_savings','Turn On/Off savings text', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_display_options_section', ['id' => 'smarty_display_savings']);
-
         // Add settings fields for colors
         add_settings_field('smarty_active_bg_color', 'Upsell (Background)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_active_bg_color']);
         add_settings_field('smarty_active_border_color', 'Upsell (Border)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_active_border_color']);
@@ -111,31 +105,14 @@ if (!function_exists('smarty_register_settings')) {
         // Add settings fields for currency
         add_settings_field('smarty_currency_symbol_position', 'Position', 'smarty_currency_position_field_cb', 'smarty_settings_page', 'smarty_currency_section', ['id' => 'smarty_currency_symbol_position']);
         add_settings_field('smarty_currency_symbol_spacing', 'Spacing', 'smarty_currency_spacing_field_cb', 'smarty_settings_page', 'smarty_currency_section', ['id' => 'smarty_currency_symbol_spacing']);
+    
+        // Add settings field for display options
+        add_settings_field('smarty_display_savings','Turn On/Off savings text', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_display_options_section', ['id' => 'smarty_display_savings']);
+        
+        // Add settings fields for debug mode
+        add_settings_field('smarty_debug_mode', 'Debug Mode', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_settings_section', ['id' => 'smarty_debug_mode']);
     }
     add_action('admin_init', 'smarty_register_settings');
-}
-
-if (!function_exists('smarty_settings_section_cb')) {
-    function smarty_settings_section_cb() {
-        echo '<p>Adjust debug settings for the plugin.</p>';
-    }
-}
-
-if (!function_exists('smarty_display_options_section_cb')) {
-    function smarty_display_options_section_cb() {
-        echo '<p>Display options for the plugin.</p>';
-    }
-}
-
-if (!function_exists('smarty_checkbox_field_cb')) {
-    function smarty_checkbox_field_cb($args) {
-        $option = get_option($args['id'], '');
-        $checked = checked(1, $option, false);
-        echo "<label class='smarty-toggle-switch'>";
-        echo "<input type='checkbox' id='{$args['id']}' name='{$args['id']}' value='1' {$checked} />";
-        echo "<span class='smarty-slider round'></span>";
-        echo "</label>";
-    }
 }
 
 if (!function_exists('smarty_colors_section_cb')) {
@@ -188,6 +165,33 @@ if (!function_exists('smarty_currency_spacing_field_cb')) {
         echo '<option value="space"' . selected($option, 'space', false) . '>With Space</option>';
         echo '<option value="no_space"' . selected($option, 'no_space', false) . '>Without Space</option>';
         echo '</select>';
+    }
+}
+
+if (!function_exists('smarty_display_options_section_cb')) {
+    function smarty_display_options_section_cb() {
+        echo '<p>Display options for the plugin.</p>';
+    }
+}
+
+if (!function_exists('smarty_settings_section_cb')) {
+    function smarty_settings_section_cb() {
+        echo '<p>Adjust debug settings for the plugin.</p>';
+    }
+}
+
+if (!function_exists('smarty_checkbox_field_cb')) {
+    function smarty_checkbox_field_cb($args) {
+        $option = get_option($args['id'], '');
+        $checked = checked(1, $option, false);
+        echo "<label class='smarty-toggle-switch'>";
+        echo "<input type='checkbox' id='{$args['id']}' name='{$args['id']}' value='1' {$checked} />";
+        echo "<span class='smarty-slider round'></span>";
+        echo "</label>";
+        // Display the description only for the debug mode checkbox
+        if ($args['id'] == 'smarty_debug_mode') {
+            echo '<p class="description">' . __('Copies specific template files from a plugin directory to a child theme directory in WordPress. <br><em><b>Important:</b> <span class="smarty-text-danger">Turn this to Off in production.</span></em>', 'smarty-custom-upsell-products-design') . '</p>';
+        }
     }
 }
 
@@ -254,8 +258,7 @@ if (!function_exists('smarty_copy_files_to_child_theme')) {
         global $pagenow;
     
         // Check if we are on the correct admin page
-        $page = isset($_GET['page']) ? $_GET['page'] : '';
-        if ($pagenow == 'admin.php' && $page == 'smarty-custom-upsell-settings') {
+        if ($pagenow == 'admin.php' && isset($_GET['page']) && $_GET['page'] == 'smarty-custom-upsell-settings') {
             // Retrieve debug setting
             $debug = get_option('smarty_debug_mode', false);
     
@@ -264,53 +267,52 @@ if (!function_exists('smarty_copy_files_to_child_theme')) {
                 add_action('admin_notices', function() {
                     echo "<div class='notice notice-info is-dismissible'><p>Debug mode is off, not copying files.</p></div>";
                 });
-                return; // Exit if debug mode is not true
-            }
-    
-            // Define an array of file names to copy
-            $files_to_copy = [
-                'variation.php',
-                'variable.php',
-                'variable-product-upsell-design.php',
-                'variable-product-standard-variations.php',
-            ];
+            } else {
+                $files_to_copy = [
+                    'variation.php',
+                    'variable.php',
+                    'variable-product-upsell-design.php',
+                    'variable-product-standard-variations.php',
+                ];
         
-            // Define the source and destination directories
-            $source_directory = plugin_dir_path(__FILE__) . '/templates/woocommerce/single-product/add-to-cart/';
-            $destination_directory = get_stylesheet_directory() . '/woocommerce/single-product/add-to-cart/';
+                // Define the source and destination directories
+                $source_directory = plugin_dir_path(__FILE__) . '/templates/woocommerce/single-product/add-to-cart/';
+                $destination_directory = get_stylesheet_directory() . '/woocommerce/single-product/add-to-cart/';
         
-            // Check if destination directory exists, if not, create it
-            if (!file_exists($destination_directory)) {
-                mkdir($destination_directory, 0755, true);
-            }
+                // Check if destination directory exists, if not, create it
+                if (!file_exists($destination_directory)) {
+                    mkdir($destination_directory, 0755, true);
+                }
         
-            // Loop through each file and copy it
-            foreach ($files_to_copy as $file_name) {
-                $source_path = $source_directory . $file_name;
-                $destination_path = $destination_directory . $file_name;
-        
-                // Check if the source file exists
-                if (file_exists($source_path)) {
-                    if (copy($source_path, $destination_path)) {
-                        // Set success message
-                        add_action('admin_notices', function() use ($file_name) {
-                            echo "<div class='notice notice-success is-dismissible'><p>Copied file: $file_name successfully.</p></div>";
-                        });
+                // Loop through each file and copy it
+                foreach ($files_to_copy as $file_name) {
+                    $source_path = $source_directory . $file_name;
+                    $destination_path = $destination_directory . $file_name;
+            
+                    // Check if the source file exists
+                    if (file_exists($source_path)) {
+                        if (copy($source_path, $destination_path)) {
+                            // Set success message
+                            add_action('admin_notices', function() use ($file_name) {
+                                echo "<div class='notice notice-success is-dismissible'><p>Copied file: <b>$file_name</b> successfully.</p></div>";
+                            });
+                        } else {
+                            // Set error message
+                            add_action('admin_notices', function() use ($file_name) {
+                                echo "<div class='notice notice-error is-dismissible'><p>Error: Unable to copy file: <b>$file_name</b>.</p></div>";
+                            });
+                        }
                     } else {
-                        // Set error message
+                        // Set file not found message
                         add_action('admin_notices', function() use ($file_name) {
-                            echo "<div class='notice notice-error is-dismissible'><p>Error: Unable to copy file: $file_name.</p></div>";
+                            echo "<div class='notice notice-warning is-dismissible'><p>Error: Source file not found: <b>$file_name</b>.</p></div>";
                         });
                     }
-                } else {
-                    // Set file not found message
-                    add_action('admin_notices', function() use ($file_name) {
-                        echo "<div class='notice notice-warning is-dismissible'><p>Error: Source file not found: $file_name.</p></div>";
-                    });
                 }
             }
         }
-    }    
+    }
+    add_action('admin_init', 'smarty_copy_files_to_child_theme');    
 }
 
 // Use the function for debugging
@@ -633,6 +635,11 @@ if (!function_exists('smarty_admin_custom_css')) {
                     width: 49%;
                     float: left;
                     box-sizing: border-box;
+                }
+
+                /* Helpers */
+                .smarty-text-danger  {
+                    color: #c51244;
                 }
             </style><?php
         } 
