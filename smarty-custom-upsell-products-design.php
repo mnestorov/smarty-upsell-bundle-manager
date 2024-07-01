@@ -239,60 +239,66 @@ if (!function_exists('smarty_copy_files_to_child_theme')) {
      * @return void Outputs messages based on success or failure of file copying when debugging is enabled.
      */
     function smarty_copy_files_to_child_theme($debug = false) {
-        // Retrieve debug setting
-        $debug = get_option('smarty_debug_mode', false);
-
-        // Only proceed if debugging is true
-        if (!$debug) {
-            add_action('admin_notices', function() {
-                echo "<div class='notice notice-info is-dismissible'><p>Debug mode is off, not copying files.</p></div>";
-            });
-            return; // Exit if debug mode is not true
-        }
-
-        // Define an array of file names to copy
-        $files_to_copy = [
-            'variation.php',
-            'variable.php',
-            'variable-product-upsell-design.php',
-            'variable-product-standard-variations.php',
-        ];
+        global $pagenow;
     
-        // Define the source and destination directories
-        $source_directory = plugin_dir_path(__FILE__) . '/templates/woocommerce/single-product/add-to-cart/';
-        $destination_directory = get_stylesheet_directory() . '/woocommerce/single-product/add-to-cart/';
+        // Check if we are on the correct admin page
+        $page = isset($_GET['page']) ? $_GET['page'] : '';
+        if ($pagenow == 'admin.php' && $page == 'smarty-custom-upsell-settings') {
+            // Retrieve debug setting
+            $debug = get_option('smarty_debug_mode', false);
     
-        // Check if destination directory exists, if not, create it
-        if (!file_exists($destination_directory)) {
-            mkdir($destination_directory, 0755, true);
-        }
+            // Only proceed if debugging is true
+            if (!$debug) {
+                add_action('admin_notices', function() {
+                    echo "<div class='notice notice-info is-dismissible'><p>Debug mode is off, not copying files.</p></div>";
+                });
+                return; // Exit if debug mode is not true
+            }
     
-        // Loop through each file and copy it
-        foreach ($files_to_copy as $file_name) {
-            $source_path = $source_directory . $file_name;
-            $destination_path = $destination_directory . $file_name;
-    
-            // Check if the source file exists
-            if (file_exists($source_path)) {
-                if (copy($source_path, $destination_path)) {
-                    // Set success message
-                    add_action('admin_notices', function() use ($file_name) {
-                        echo "<div class='notice notice-success is-dismissible'><p>Copied file: $file_name successfully.</p></div>";
-                    });
+            // Define an array of file names to copy
+            $files_to_copy = [
+                'variation.php',
+                'variable.php',
+                'variable-product-upsell-design.php',
+                'variable-product-standard-variations.php',
+            ];
+        
+            // Define the source and destination directories
+            $source_directory = plugin_dir_path(__FILE__) . '/templates/woocommerce/single-product/add-to-cart/';
+            $destination_directory = get_stylesheet_directory() . '/woocommerce/single-product/add-to-cart/';
+        
+            // Check if destination directory exists, if not, create it
+            if (!file_exists($destination_directory)) {
+                mkdir($destination_directory, 0755, true);
+            }
+        
+            // Loop through each file and copy it
+            foreach ($files_to_copy as $file_name) {
+                $source_path = $source_directory . $file_name;
+                $destination_path = $destination_directory . $file_name;
+        
+                // Check if the source file exists
+                if (file_exists($source_path)) {
+                    if (copy($source_path, $destination_path)) {
+                        // Set success message
+                        add_action('admin_notices', function() use ($file_name) {
+                            echo "<div class='notice notice-success is-dismissible'><p>Copied file: $file_name successfully.</p></div>";
+                        });
+                    } else {
+                        // Set error message
+                        add_action('admin_notices', function() use ($file_name) {
+                            echo "<div class='notice notice-error is-dismissible'><p>Error: Unable to copy file: $file_name.</p></div>";
+                        });
+                    }
                 } else {
-                    // Set error message
+                    // Set file not found message
                     add_action('admin_notices', function() use ($file_name) {
-                        echo "<div class='notice notice-error is-dismissible'><p>Error: Unable to copy file: $file_name.</p></div>";
+                        echo "<div class='notice notice-warning is-dismissible'><p>Error: Source file not found: $file_name.</p></div>";
                     });
                 }
-            } else {
-                // Set file not found message
-                add_action('admin_notices', function() use ($file_name) {
-                    echo "<div class='notice notice-warning is-dismissible'><p>Error: Source file not found: $file_name.</p></div>";
-                });
             }
         }
-    }
+    }    
 }
 
 // Use the function for debugging
