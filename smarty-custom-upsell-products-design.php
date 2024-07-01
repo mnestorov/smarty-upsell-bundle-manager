@@ -70,9 +70,11 @@ if (!function_exists('smarty_register_settings')) {
         register_setting('smarty_settings_group', 'smarty_savings_text_size');
         register_setting('smarty_settings_group', 'smarty_savings_text_color');
         register_setting('smarty_settings_group', 'smarty_image_border_color');
+        register_setting('smarty_settings_group', 'smarty_display_savings');
 
         // Add settings sections
         add_settings_section('smarty_settings_section', 'Debug', 'smarty_settings_section_cb', 'smarty_settings_page');
+        add_settings_section('smarty_display_options_section', 'Display Options', 'smarty_display_options_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_colors_section', 'Colors', 'smarty_colors_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_font_sizes_section', 'Font Sizes', 'smarty_font_sizes_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_currency_section', 'Currency Symbol', 'smarty_currency_section_cb', 'smarty_settings_page');
@@ -80,6 +82,9 @@ if (!function_exists('smarty_register_settings')) {
         // Add settings fields for debug mode
         add_settings_field('smarty_debug_mode', 'Debug Mode', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_settings_section', ['id' => 'smarty_debug_mode']);
         
+        // Add settings field for display options
+        add_settings_field('smarty_display_savings','Turn On/Off savings text', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_display_options_section', ['id' => 'smarty_display_savings']);
+
         // Add settings fields for colors
         add_settings_field('smarty_active_bg_color', 'Upsell (Background)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_active_bg_color']);
         add_settings_field('smarty_active_border_color', 'Upsell (Border)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_active_border_color']);
@@ -92,6 +97,7 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_field('smarty_label_2_bg_color', 'Label 2 (Background)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_label_2_bg_color']);
         add_settings_field('smarty_label_2_color', 'Label 2 (Text)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_label_2_color']);
         add_settings_field('smarty_image_border_color', 'Image Border', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_image_border_color']);
+        add_settings_field('smarty_savings_text_color', 'Savings Text', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_savings_text_color']);
 
         // Add settings fields for font sizes
         add_settings_field('smarty_price_font_size', 'Price', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_price_font_size']);
@@ -100,11 +106,8 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_field('smarty_free_delivery_font_size', 'Free Delivery', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_free_delivery_font_size']);
         add_settings_field('smarty_label_1_font_size', 'Label 1', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_label_1_font_size']);
         add_settings_field('smarty_label_2_font_size', 'Label 2', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_label_2_font_size']);
-
-        // Add settings fields for savings text
         add_settings_field('smarty_savings_text_size', 'Savings Text', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_savings_text_size']);
-        add_settings_field('smarty_savings_text_color', 'Savings Text', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_savings_text_color']);
-
+        
         // Add settings fields for currency
         add_settings_field('smarty_currency_symbol_position', 'Position', 'smarty_currency_position_field_cb', 'smarty_settings_page', 'smarty_currency_section', ['id' => 'smarty_currency_symbol_position']);
         add_settings_field('smarty_currency_symbol_spacing', 'Spacing', 'smarty_currency_spacing_field_cb', 'smarty_settings_page', 'smarty_currency_section', ['id' => 'smarty_currency_symbol_spacing']);
@@ -118,11 +121,20 @@ if (!function_exists('smarty_settings_section_cb')) {
     }
 }
 
+if (!function_exists('smarty_display_options_section_cb')) {
+    function smarty_display_options_section_cb() {
+        echo '<p>Display options for the plugin.</p>';
+    }
+}
+
 if (!function_exists('smarty_checkbox_field_cb')) {
     function smarty_checkbox_field_cb($args) {
         $option = get_option($args['id'], '');
         $checked = checked(1, $option, false);
+        echo "<label class='smarty-toggle-switch'>";
         echo "<input type='checkbox' id='{$args['id']}' name='{$args['id']}' value='1' {$checked} />";
+        echo "<span class='smarty-slider round'></span>";
+        echo "</label>";
     }
 }
 
@@ -547,7 +559,88 @@ if (!function_exists('smarty_save_custom_fields_variations')) {
     add_action('woocommerce_save_product_variation', 'smarty_save_custom_fields_variations', 10, 2);
 }
 
-if (!function_exists('smarty_custom_css')) {
+if (!function_exists('smarty_admin_custom_css')) {
+    function smarty_admin_custom_css() { 
+        if (is_admin()) { ?>
+            <style>
+                /* The switch - the box around the slider */
+                .smarty-toggle-switch {
+                    position: relative;
+                    display: inline-block;
+                    width: 60px;
+                    height: 34px;
+                }
+
+                /* Hide default HTML checkbox */
+                .smarty-toggle-switch input {
+                    opacity: 0;
+                    width: 0;
+                    height: 0;
+                }
+
+                /* The slider */
+                .smarty-slider {
+                    position: absolute;
+                    cursor: pointer;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: #ccc;
+                    transition: .4s;
+                    border-radius: 34px;
+                }
+
+                .smarty-slider:before {
+                    position: absolute;
+                    content: "";
+                    height: 26px;
+                    width: 26px;
+                    left: 4px;
+                    bottom: 4px;
+                    background-color: white;
+                    transition: .4s;
+                    border-radius: 50%;
+                }
+
+                input:checked + .smarty-slider {
+                    background-color: #2196F3;
+                }
+
+                input:checked + .smarty-slider:before {
+                    transform: translateX(26px);
+                }
+
+                /* Rounded sliders */
+                .smarty-slider.round {
+                    border-radius: 34px;
+                }
+
+                .smarty-slider.round:before {
+                    border-radius: 50%;
+                }
+
+                .woocommerce_variation .form-row {
+                    overflow: hidden;
+                }
+
+                .woocommerce_variation .form-row.full {
+                    clear: both;
+                }
+
+                .woocommerce_variation .form-row.form-row-first,
+                .woocommerce_variation .form-row.form-row-last {
+                    width: 49%;
+                    float: left;
+                    box-sizing: border-box;
+                }
+            </style><?php
+        } 
+    }
+    add_action('admin_head', 'smarty_admin_custom_css');
+}
+
+if (!function_exists('smarty_public_custom_css')) {
 	/**
 	 * Outputs custom CSS to the head of single product pages.
 	 *
@@ -558,7 +651,7 @@ if (!function_exists('smarty_custom_css')) {
 	 *
 	 * You can modify the CSS styles within the function to suit your needs.
 	 */
-	function smarty_custom_css() {
+	function smarty_public_custom_css() {
         $active_bg_color = get_option('smarty_active_bg_color', 'rgba(210, 184, 133, 0.3)');
         $active_border_color = get_option('smarty_active_border_color', '#D2B885');
         $price_color = get_option('smarty_price_color', '#99B998');
@@ -578,156 +671,148 @@ if (!function_exists('smarty_custom_css')) {
         $savings_text_size = get_option('smarty_savings_text_size', '14') . 'px';
         $savings_text_color = get_option('smarty_savings_text_color', '#000000');
         $image_border_color = get_option('smarty_image_border_color', '#000000');
-    
-        if (is_admin()) {
-            echo '<style>
-            .woocommerce_variation .form-row {
-                overflow: hidden;
-            }
-            .woocommerce_variation .form-row.full {
-                clear: both;
-            }
-            .woocommerce_variation .form-row.form-row-first,
-            .woocommerce_variation .form-row.form-row-last {
-                width: 49%;
-                float: left;
-                box-sizing: border-box;
-            }
-            </style>';
-        }
-    
-        if (is_product()) {
-            echo '<style>
-            .product-single .product__actions .product__actions__inner {
-                border: none;
-            }
-            
-            .product-single .product__actions .quantity input,
-            .woocommerce-variation-add-to-cart .variations_button .woocommerce-variation-add-to-cart-enabled .quantity,
-            .checkmark {
-                display: none;
-            }
-            
-            .main_title_wrap {
-                position: relative;
-                height: 115px;
-                padding-left: 15px;
-                margin: 30px 0;
-                box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
-                -webkit-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
-                -moz-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
-                transition: all 0.3s ease-in;
-                border-radius: 5px;
-                border: 2px solid #ffffff00;
-            }
-            
-            .main_title_wrap .var_txt {
-                position: absolute;
-                top: 24px;
-                width: 100%;
-                font-size: ' . esc_attr($font_size) . 'px;
-            }
 
-            .main_title_wrap.active,
-            .main_title_wrap:hover {
-                background: ' . esc_attr($active_bg_color) . ';
-                border: 2px solid ' . esc_attr($active_border_color) . ';
-            }
-    
-            .price {
-                color: ' . esc_attr($price_color) . ';
-                font-weight: bold;
-                font-size: ' . esc_attr($price_font_size) . 'px;
-            }
-            
-            .old_price {
-                text-decoration: line-through;
-                color: ' . esc_attr($old_price_color) . ';
-                font-weight: bold;
-                font-size: ' . esc_attr($old_price_font_size) . 'px;
-            }
-            
-            .main_title_wrap input {
-                position: absolute;
-                top: 27px;
-            }
-            
-            .upsell-container .variable_content {
-                margin-top: 45px;
-            }
-            
-            .upsell-container .variable_title {
-                margin-left: 24px !important;
-                font-size: 16px;
-                font-weight: 700;
-            }
-            
-            .upsell-container .variable_desc {
-                font-size: ' . esc_attr($variable_desc_font_size) . 'px;
-            }
-            
-            .upsell-container .variable_img {
-                width: 16%;
-                float: right;
-                margin-top: 25px;
-                margin-right: 10px;
-                border: 1px solid ' . esc_attr($image_border_color) . ';
-                border-radius: 5px;
-            }
+        if (is_product()) { ?>
+            <style>
+                .product-single .product__actions .product__actions__inner {
+                    border: none;
+                }
+                
+                .product-single .product__actions .quantity input,
+                .woocommerce-variation-add-to-cart .variations_button .woocommerce-variation-add-to-cart-enabled .quantity,
+                .checkmark {
+                    display: none;
+                }
+                
+                .main_title_wrap {
+                    position: relative;
+                    height: 115px;
+                    padding-left: 15px;
+                    margin: 30px 0;
+                    box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+                    -webkit-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+                    -moz-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+                    transition: all 0.3s ease-in;
+                    border-radius: 5px;
+                    border: 2px solid #ffffff00;
+                }
+                
+                .main_title_wrap .var_txt {
+                    position: absolute;
+                    top: 24px;
+                    width: 100%;
+                    font-size: <?php echo esc_attr($font_size) . 'px'; ?>;
+                }
 
-            .variations_form .variations {
-                padding-top: 0;
-            }
-            
-            .product-single .product__actions .single_variation_wrap .woocommerce-variation {
-                height: 40px;
-                padding: 12px 50px 20px 160px;
-            }
-    
-            .label_1 {
-                font-size: ' . esc_attr($label_1_font_size) . 'px;
-                color: ' . esc_attr($label_1_color) . ';
-                font-weight: 600;
-                position: absolute;
-                top: 0;
-                right: 0;
-                border-radius: 0 0 0 75px;
-                padding: 0 18px;
-                background: ' . esc_attr($label_1_bg_color) . ';
-            }
+                .main_title_wrap.active,
+                .main_title_wrap:hover {
+                    background: <?php echo esc_attr($active_bg_color); ?>;
+                    border: 2px solid <?php echo esc_attr($active_border_color); ?>;
+                }
+        
+                .price {
+                    color: <?php echo esc_attr($price_color); ?>;
+                    font-weight: bold;
+                    font-size: <?php echo esc_attr($price_font_size) . 'px'; ?>;
+                }
+                
+                .old_price {
+                    text-decoration: line-through;
+                    color: <?php echo esc_attr($old_price_color); ?>;
+                    font-weight: bold;
+                    font-size: <?php echo esc_attr($old_price_font_size) . 'px'; ?>;
+                }
+                
+                .main_title_wrap input {
+                    position: absolute;
+                    top: 27px;
+                }
+                
+                .upsell-container .variable_content {
+                    margin-top: 40px;
+                }
+                
+                .upsell-container .variable_title {
+                    margin-left: 24px !important;
+                    font-size: 16px;
+                    font-weight: 700;
+                }
+                
+                .upsell-container .variable_desc {
+                    font-size: <?php echo esc_attr($variable_desc_font_size) . 'px'; ?>;
+                    padding-top: 7px;
+                    display: block;
+                }
+                
+                .upsell-container .variable_img {
+                    width: 16%;
+                    float: right;
+                    margin-top: 18px;
+                    margin-right: 10px;
+                    border: 1px solid <?php echo esc_attr($image_border_color); ?>;
+                    border-radius: 5px;
+                }
 
-            .label_2 {
-                font-size: ' . esc_attr($label_2_font_size) . 'px;
-                color: ' . esc_attr($label_2_color) . ';
-                font-weight: 600;
-                position: absolute;
-                top: 0;
-                right: 0;
-                border-radius: 0 0 0 75px;
-                padding: 0 18px;
-                background: ' . esc_attr($label_2_bg_color) . ';
-            }
-            
-            .free_delivery {
-                font-size: ' . esc_attr($free_delivery_font_size) . 'px;
-                color: ' . esc_attr($free_delivery_color) . ';
-                font-weight: 600;
-                position: absolute;
-                top: 0;
-                left: 0;
-                border-radius: 0 0 75px 0;
-                padding: 0 18px;
-                background: ' . esc_attr($free_delivery_bg_color) . ';
-            }
+                .variations_form .variations {
+                    padding-top: 0;
+                }
+                
+                .product-single .product__actions .single_variation_wrap .woocommerce-variation {
+                    height: 40px;
+                    padding: 12px 50px 20px 160px;
+                }
+        
+                .label_1 {
+                    font-size: <?php echo esc_attr($label_1_font_size) . 'px'; ?>;
+                    color: <?php echo esc_attr($label_1_color); ?>;
+                    font-weight: 600;
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    border-radius: 0 0 0 75px;
+                    padding: 0 18px;
+                    background: <?php echo esc_attr($label_1_bg_color); ?>;
+                }
 
-            .savings-text {
-                font-size: ' . esc_attr($savings_text_size) . ';
-                color: ' . esc_attr($savings_text_color) . ';
-            }
-            </style>';
+                .label_2 {
+                    font-size: <?php echo esc_attr($label_2_font_size) . 'px'; ?>;
+                    color: <?php echo esc_attr($label_2_color); ?>;
+                    font-weight: 600;
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    border-radius: 0 0 0 75px;
+                    padding: 0 18px;
+                    background: <?php echo esc_attr($label_2_bg_color); ?>;
+                }
+                
+                .free_delivery {
+                    font-size: <?php echo esc_attr($free_delivery_font_size) . 'px'; ?>;
+                    color: <?php echo esc_attr($free_delivery_color); ?>;
+                    font-weight: 600;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    border-radius: 0 0 75px 0;
+                    padding: 0 18px;
+                    background: <?php echo esc_attr($free_delivery_bg_color); ?>;
+                }
+
+                .savings-text {
+                    font-size: <?php echo esc_attr($savings_text_size); ?>;
+                    color: <?php echo esc_attr($savings_text_color); ?>;
+                }
+
+                @media (max-width: 480px) { /* Adjusts for devices with width less than 768px */
+                    .savings-text {
+                        display: block; /* Forces the text onto a new line */
+                        margin-top: -5px; /* Adds some space above the text */
+                    }
+                }
+            </style><?php
         }
     }
-    add_action('wp_head', 'smarty_custom_css');    
+    add_action('wp_head', 'smarty_public_custom_css');    
 }
 
 if (!function_exists('smarty_admin_custom_js')) {
@@ -788,12 +873,11 @@ if (!function_exists('smarty_public_custom_js')) {
         $decimals = wc_get_price_decimals();
         $spacing = ($currency_spacing === 'space') ? ' ' : '';
 
-        // Get savings text settings
+        // Savings text settings
+        $display_savings = get_option('smarty_display_savings', '0') === '1'; // get the setting and check if it is enabled
         $savings_text_size = get_option('smarty_savings_text_size', '14') . 'px';
         $savings_text_color = get_option('smarty_savings_text_color', '#000000');
-
-        // Translatable text for 'you save'
-        $youSaveText = esc_js(__('you save', 'smarty-custom-upsell-products-design'));
+        $youSaveText = esc_js(__('you save', 'smarty-custom-upsell-products-design')); // translatable text for 'you save'
 
         ?>
         <script type="text/javascript">
@@ -815,6 +899,7 @@ if (!function_exists('smarty_public_custom_js')) {
                 var thousandSeparator = '<?php echo $thousand_separator; ?>';
                 var decimals = <?php echo $decimals; ?>;
                 var youSaveText = '<?php echo $youSaveText; ?>';
+                var displaySavings = <?php echo json_encode($display_savings); ?>;
 
                 function formatPrice(price, isRegular) {
                     var formattedPrice = parseFloat(price).toLocaleString(undefined, {
@@ -834,6 +919,9 @@ if (!function_exists('smarty_public_custom_js')) {
                 }
 
                 function formatSavings(regularPrice, salePrice) {
+                    if (!displaySavings) {
+                        return ''; // if disabled, return an empty string
+                    }
                     var savings = regularPrice - salePrice;
                     return '<span class="savings-text" style="font-size:' + savingsTextSize + '; color:' + savingsTextColor + ';">(' + youSaveText + ' ' + formatPrice(savings.toFixed(2), false) + ')</span>';
                 }
@@ -871,4 +959,3 @@ if (!function_exists('smarty_public_custom_js')) {
     }
     add_action('wp_head', 'smarty_public_custom_js');
 }
-
