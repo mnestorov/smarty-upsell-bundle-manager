@@ -256,6 +256,10 @@ if (!function_exists('smarty_copy_files_to_child_theme')) {
      */
     function smarty_copy_files_to_child_theme($debug = false) {
         global $pagenow;
+
+        static $already_run = false;
+        if ($already_run) return;
+        $already_run = true;
     
         // Check if we are on the correct admin page
         if ($pagenow == 'admin.php' && isset($_GET['page']) && $_GET['page'] == 'smarty-custom-upsell-settings') {
