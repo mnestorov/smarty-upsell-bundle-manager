@@ -71,6 +71,7 @@ if (!function_exists('smarty_register_settings')) {
         register_setting('smarty_settings_group', 'smarty_image_border_color');
         register_setting('smarty_settings_group', 'smarty_display_savings');
         register_setting('smarty_settings_group', 'smarty_debug_mode');
+        register_setting('smarty_settings_group', 'smarty_debug_notices_enabled');
 
         // Add settings sections
         add_settings_section('smarty_colors_section', 'Colors', 'smarty_colors_section_cb', 'smarty_settings_page');
@@ -109,8 +110,9 @@ if (!function_exists('smarty_register_settings')) {
         // Add settings field for display options
         add_settings_field('smarty_display_savings','Turn On/Off savings text', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_display_options_section', ['id' => 'smarty_display_savings']);
         
-        // Add settings fields for debug mode
+        // Add settings fields for debug mode and for toggling debug notices
         add_settings_field('smarty_debug_mode', 'Debug Mode', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_settings_section', ['id' => 'smarty_debug_mode']);
+        add_settings_field('smarty_debug_notices_enabled', 'Enable Debug Notices', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_settings_section', ['id' => 'smarty_debug_notices_enabled', 'label_for' => 'smarty_debug_notices_enabled']);
     }
     add_action('admin_init', 'smarty_register_settings');
 }
@@ -258,13 +260,23 @@ if (!function_exists('smarty_copy_files_to_child_theme')) {
         global $pagenow;
 
         static $already_run = false;
-        if ($already_run) return;
-        $already_run = true;
+        if ($already_run) {
+            return;
+        }
     
         // Check if we are on the correct admin page
         if ($pagenow == 'admin.php' && isset($_GET['page']) && $_GET['page'] == 'smarty-custom-upsell-settings') {
+            
             // Retrieve debug setting
             $debug = get_option('smarty_debug_mode', false);
+
+            $notices_enabled = get_option('smarty_debug_notices_enabled', false);
+
+            if (!$notices_enabled) {
+                return; // Exit if notices are disabled
+            }
+
+            $already_run = true; // Set to prevent future execution within the same request
     
             // Only proceed if debugging is true
             if (!$debug) {
