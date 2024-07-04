@@ -8,8 +8,9 @@
  * Author URI: https://smartystudio.net
  * Text Domain: smarty-custom-upsell-products-design
  * Domain Path: /languages/
- * WC requires at least: 3.0.0
- * WC tested up to: 6.1.0
+ * WC requires at least: 3.5.0
+ * WC tested up to: 9.0.2
+ * Requires Plugins: woocommerce
  */
 
 // If this file is called directly, abort.
