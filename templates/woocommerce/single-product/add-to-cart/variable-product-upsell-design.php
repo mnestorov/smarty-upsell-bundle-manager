@@ -18,12 +18,15 @@ if ($up_sell_design) :
                         foreach ($pr_child_variations as $key_v => $v) :
                             $single_variation = new WC_Product_Variation($v);
                             if ($single_variation->exists()) :
-                                $attr_slug = reset($single_variation->get_attributes());
+                                $attributes = $single_variation->get_attributes();
+                                $attr_slug = reset($attributes);
                                 $term_slug = $get_available_variations[$key_v]['attributes']['attribute_' . $attribute_name];
                                 if (!in_array($attr_slug, $options)) continue;
 
                                 $bg_thumb = wp_get_attachment_image_src(get_post_thumbnail_id($v), 'woocommerce_thumbnail');
                                 $srcset_thumb = wp_get_attachment_image_srcset(get_post_thumbnail_id($v));
+
+                                $attr_key = array_search($attr_slug, $options); // Ensure $attr_key is defined
 
                                 [$regular_price, $free_delivery_amount, $price, $currency] = [
                                     !empty($local_prices['regular_price']) ? $local_prices['regular_price'] : $single_variation->get_regular_price(),
@@ -88,7 +91,7 @@ if ($up_sell_design) :
                         'options' => $options,
                         'attribute' => $attribute_name,
                         'product' => $product,
-                        'selected' => $options[0],
+                        'selected' => reset($options), // Pass variable
                     ]);
 
                     echo end($attribute_keys) === $attribute_name ? wp_kses_post(apply_filters('woocommerce_reset_variations_link', '<a class="reset_variations" href="#">' . esc_html__('Clear', 'mn-wordpress-custom-upsell-products-design') . '</a>')) : '';
@@ -110,6 +113,7 @@ else :
                         'options' => $options,
                         'attribute' => $attribute_name,
                         'product' => $product,
+                        'selected' => reset($options), // Pass variable
                     ]);
 
                     echo end($attribute_keys) === $attribute_name ? wp_kses_post(apply_filters('woocommerce_reset_variations_link', '<a class="reset_variations" href="#">' . esc_html__('Clear', 'woocommerce') . '</a>')) : '';

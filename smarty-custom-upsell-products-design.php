@@ -25,6 +25,9 @@ if (!function_exists('smarty_enqueue_scripts')) {
             return;
         }
 
+        wp_enqueue_style('select2-css', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css');
+        wp_enqueue_script('select2-js', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js', array('jquery'), '4.0.13', true);
+
         // Enqueue style and script for using the WordPress color picker.
         wp_enqueue_style('wp-color-picker');
         wp_enqueue_script('wp-color-picker');
@@ -49,6 +52,7 @@ if (!function_exists('smarty_register_settings_page')) {
 if (!function_exists('smarty_register_settings')) {
     function smarty_register_settings() {
         // Register settings
+        register_setting('smarty_settings_group', 'smarty_additional_products');
         register_setting('smarty_settings_group', 'smarty_active_bg_color');
         register_setting('smarty_settings_group', 'smarty_active_border_color');
         register_setting('smarty_settings_group', 'smarty_price_color');
@@ -75,6 +79,7 @@ if (!function_exists('smarty_register_settings')) {
         register_setting('smarty_settings_group', 'smarty_debug_notices_enabled');
 
         // Add settings sections
+        add_settings_section('smarty_additional_products_section', 'Products', 'smarty_additional_products_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_colors_section', 'Colors', 'smarty_colors_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_font_sizes_section', 'Font Sizes', 'smarty_font_sizes_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_currency_section', 'Currency Symbol', 'smarty_currency_section_cb', 'smarty_settings_page');
@@ -82,6 +87,7 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_section('smarty_settings_section', 'Debug', 'smarty_settings_section_cb', 'smarty_settings_page');
         
         // Add settings fields for colors
+        add_settings_field('smarty_additional_products', 'Additional Products', 'smarty_additional_products_field_cb', 'smarty_settings_page', 'smarty_additional_products_section');
         add_settings_field('smarty_active_bg_color', 'Upsell (Background)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_active_bg_color']);
         add_settings_field('smarty_active_border_color', 'Upsell (Border)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_active_border_color']);
         add_settings_field('smarty_price_color', 'Price', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_price_color']);
@@ -118,6 +124,12 @@ if (!function_exists('smarty_register_settings')) {
     add_action('admin_init', 'smarty_register_settings');
 }
 
+if (!function_exists('smarty_additional_products_section_cb')) {
+    function smarty_additional_products_section_cb() {
+        echo '<p>Choose your WooCommerce additional products.</p>';
+    }
+}
+
 if (!function_exists('smarty_colors_section_cb')) {
     function smarty_colors_section_cb() {
         echo '<p>Customize the colors for various elements in your WooCommerce upsell products.</p>';
@@ -148,7 +160,33 @@ if (!function_exists('smarty_font_size_field_cb')) {
 if (!function_exists('smarty_currency_section_cb')) {
     function smarty_currency_section_cb() {
         echo '<p>Customize the currency symbol position and spacing for your WooCommerce upsell products.</p>';
+    }
 }
+
+if (!function_exists('smarty_additional_products_field_cb')) {
+    function smarty_additional_products_field_cb() {
+        $upsell_products = get_option('smarty_additional_products', []);
+        // Ensure $additional_products is always an array
+        $additional_products = is_array($upsell_products) ? $upsell_products : [];
+        $products = wc_get_products(array('limit' => -1)); // Get all products
+
+        echo '<select name="smarty_additional_products[]" multiple="multiple" id="smarty_additional_products" style="width: 100%;">';
+        foreach ($products as $product) {
+            $selected = in_array($product->get_id(), $additional_products) ? 'selected' : '';
+            echo '<option value="' . esc_attr($product->get_id()) . '" ' . esc_attr($selected) . '>' . esc_html($product->get_name()) . '</option>';
+        }
+        echo '</select>'; ?>
+
+        <script>
+            jQuery(document).ready(function($) {
+                $('#smarty_additional_products').select2({
+                    placeholder: "Select additional products",
+                    allowClear: true
+                });
+            });
+        </script>
+        <?php
+    }
 }
 
 if (!function_exists('smarty_currency_position_field_cb')) {
@@ -399,18 +437,17 @@ if (!function_exists('smarty_variable_price_range')) {
     /**
      * Modifies the display format of WooCommerce variable product prices.
      * 
-     * @param string $wcv_price Current price HTML.
+     * @param string $wc_variable_price Current price HTML.
      * @param WC_Product $product WooCommerce product object.
      * @return string Modified price HTML.
      */
     function smarty_variable_price_range($wc_variable_price, $product) {
         $prefix = '';
-        $wc_variable_min_sale_price = null;
+        $wc_variable_min_sale_price = $product->get_variation_sale_price('min', true);
         $wc_variable_reg_min_price = $product->get_variation_regular_price('min', true);
-        $wc_variable__min_sale_price = $product->get_variation_sale_price('min', true);
-        $wc_variable__max_price = $product->get_variation_price('max', true);
-        $wc_variable__min_price = $product->get_variation_price('min', true);
-        $wc_variable__price = ($wc_variable_min_sale_price == $wc_variable_reg_min_price) 
+        $wc_variable_max_price = $product->get_variation_price('max', true);
+        $wc_variable_min_price = $product->get_variation_price('min', true);
+        $wc_variable_price = ($wc_variable_min_sale_price == $wc_variable_reg_min_price) 
             ? wc_price($wc_variable_reg_min_price) 
             : wc_price($wc_variable_min_sale_price);
 
@@ -695,6 +732,7 @@ if (!function_exists('smarty_public_custom_css')) {
         $savings_text_size = get_option('smarty_savings_text_size', '14') . 'px';
         $savings_text_color = get_option('smarty_savings_text_color', '#000000');
         $image_border_color = get_option('smarty_image_border_color', '#000000');
+        $font_size = get_option('smarty_variable_desc_font_size', '14');
 
         if (is_product()) { ?>
             <style>
