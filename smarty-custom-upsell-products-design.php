@@ -897,12 +897,38 @@ if (!function_exists('smarty_public_custom_css')) {
                 }
 
                 .additional-products input[type="checkbox"] {
+                    width: 20px;
+                    height: 20px;
                     margin-right: 10px;
+                    border-radius: 3px;
+                    background-color: #f0f4e5;
+                    border: 1px solid rgb(112,153,0);
+                    cursor: pointer;
+                    -webkit-appearance: none;
+                    -moz-appearance: none;
+                    appearance: none;
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .additional-products input[type="checkbox"]::after {
+                    content: "";
+                    width: 10px;
+                    height: 10px;
+                    background-color: #709900;
+                    border-radius: 2px;
+                    display: none;
+                }
+
+                .additional-products input[type="checkbox"]:checked::after {
+                    display: block;
                 }
 
                 .additional-product-image {
-                    width: 50px;
-                    height: 50px;
+                    width: 65px;
+                    height: 65px;
                     margin-right: 10px;
                 }
 
@@ -1122,7 +1148,7 @@ if (!function_exists('smarty_add_additional_products_checkbox')) {
 
             if ($additional_products) {
                 echo '<div class="additional-products">';
-                echo '<h5>' . __('You can also add', 'smarty-custom-upsell-products-design') . '</h5>';
+                echo '<p><strong>' . __('You can also add', 'smarty-custom-upsell-products-design') . '</strong></p>';
                 foreach ($additional_products as $additional_product) {
                     $product_obj = wc_get_product($additional_product->get_id());
                     $product_image = $product_obj->get_image('thumbnail');
