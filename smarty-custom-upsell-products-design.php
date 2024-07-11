@@ -892,8 +892,8 @@ if (!function_exists('smarty_public_custom_css')) {
 
                 .additional-products label.active, 
                 .additional-products label:hover {
-                    background: #efe5d0;
-                    border: 2px solid #d2b885;
+                    background: <?php echo esc_attr($active_bg_color); ?>;
+                    border: 2px solid <?php echo esc_attr($active_border_color); ?>;
                 }
 
                 .additional-products input[type="checkbox"] {
@@ -927,31 +927,31 @@ if (!function_exists('smarty_public_custom_css')) {
                 }
 
                 .additional-product-image {
-                    width: 65px;
-                    height: 65px;
+                    width: 16%;
                     margin-right: 10px;
+                    border: 1px solid <?php echo esc_attr($image_border_color); ?>;
+                    border-radius: 5px;
                 }
 
                 .additional-product-title {
-                    font-weight: bold;
                     margin-right: auto;
                 }
 
                 .additional-product-price {
-                    font-size: 18px;
-                    color: #333333;
+                    font-size: <?php echo esc_attr($price_font_size) . 'px'; ?>;
+                    color: <?php echo esc_attr($price_color); ?>;
                     display: block;
                 }
 
                 .additional-product-regular-price > .woocommerce-Price-amount.amount bdi {
-                    font-size: 18px;
-                    color: #DD5444;
+                    font-size: <?php echo esc_attr($old_price_font_size) . 'px'; ?>;
+                    color: <?php echo esc_attr($old_price_color); ?>;
                     text-decoration: line-through;
                 }
 
                 .additional-product-sale-price > .woocommerce-Price-amount.amount bdi {
-                    font-size: 18px;
-                    color: #333333;
+                    font-size: <?php echo esc_attr($price_font_size) . 'px'; ?>;
+                    color: <?php echo esc_attr($price_color); ?>;
                     font-weight: bold;
                 }
             </style><?php
