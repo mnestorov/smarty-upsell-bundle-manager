@@ -81,7 +81,7 @@ if (!function_exists('smarty_register_settings')) {
         register_setting('smarty_settings_group', 'smarty_debug_notices_enabled');
         
         // Add settings sections
-        add_settings_section('smarty_upsell_styling_section', 'Upsell Products', 'smarty_upsell_styling_section_cb', 'smarty_settings_page');
+        add_settings_section('smarty_upsell_styling_section', 'Variable (Upsell) Products', 'smarty_upsell_styling_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_additional_products_section', 'Additional Products', 'smarty_additional_products_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_colors_section', 'Colors', 'smarty_colors_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_font_sizes_section', 'Font Sizes', 'smarty_font_sizes_section_cb', 'smarty_settings_page');
@@ -90,7 +90,7 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_section('smarty_settings_section', 'Debug', 'smarty_settings_section_cb', 'smarty_settings_page');
 
         // Add settings fields for additional products features
-        add_settings_field('smarty_enable_upsell_styling', 'Enable Upsell Styling', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_upsell_styling_section', ['id' => 'smarty_enable_upsell_styling']);
+        add_settings_field('smarty_enable_upsell_styling', 'Enable Variations (Upsell) Styling', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_upsell_styling_section', ['id' => 'smarty_enable_upsell_styling']);
         add_settings_field('smarty_enable_additional_products', 'Enable/Disable Additional Products', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_additional_products_section', ['id' => 'smarty_enable_additional_products']);
         add_settings_field('smarty_choose_additional_products', 'Choose Products', 'smarty_choose_additional_products_field_cb', 'smarty_settings_page', 'smarty_additional_products_section');
         
@@ -133,13 +133,13 @@ if (!function_exists('smarty_register_settings')) {
 
 if (!function_exists('smarty_upsell_styling_section_cb')) {
     function smarty_upsell_styling_section_cb() {
-        echo '<p>Enable or disable upsell styling of the plugin.</p>';
+        echo '<p>Enable or disable variation styling of the variable products.</p>';
     }
 }
 
 if (!function_exists('smarty_additional_products_section_cb')) {
     function smarty_additional_products_section_cb() {
-        echo '<p>Enable or disable additional products features of the plugin or/and choose your additional products.</p>';
+        echo '<p>Enable or disable additional products feature for single or variable products or/and choose your additional products.</p>';
     }
 }
 
@@ -157,6 +157,14 @@ if (!function_exists('smarty_checkbox_field_cb')) {
         echo "<input type='checkbox' id='{$args['id']}' name='{$args['id']}' value='1' {$checked} />";
         echo "<span class='smarty-slider round'></span>";
         echo "</label>";
+        // Display the description only for the debug mode checkbox
+        if ($args['id'] == 'smarty_debug_mode') {
+            echo '<p class="description">' . __('Copies specific template files from a plugin directory to a child theme directory in WordPress. <br><em><b>Important:</b> <span class="smarty-text-danger">Turn this to Off in production.</span></em>', 'smarty-custom-upsell-products-design') . '</p>';
+        }
+        // Display the description only for the enable upsell styling checkbox
+        if ($args['id'] == 'smarty_enable_upsell_styling') {
+            echo '<p class="description">' . __('Enable/Disable custom styling for the variations of the variable products. <br><em><b>Important:</b> <span class="smarty-text-danger">Turn this to Off if you have any problems with the styling of the variable products.</span></em>', 'smarty-custom-upsell-products-design') . '</p>';
+        }
     }
 }
 
