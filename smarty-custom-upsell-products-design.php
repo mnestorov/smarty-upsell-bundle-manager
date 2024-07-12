@@ -746,6 +746,8 @@ if (!function_exists('smarty_public_custom_css')) {
 	 * You can modify the CSS styles within the function to suit your needs.
 	 */
 	function smarty_public_custom_css() {
+        $upsell_styling_enabled = get_option('smarty_enable_upsell_styling', '0') === '1';
+
         $active_bg_color = get_option('smarty_active_bg_color', 'rgba(210, 184, 133, 0.3)');
         $active_border_color = get_option('smarty_active_border_color', '#D2B885');
         $price_color = get_option('smarty_price_color', '#99B998');
@@ -767,133 +769,137 @@ if (!function_exists('smarty_public_custom_css')) {
         $image_border_color = get_option('smarty_image_border_color', '#000000');
 
         if (is_product()) { ?>
+            <?php if ($upsell_styling_enabled) { ?>
+                <style>
+                    .product-single .product__actions .product__actions__inner {
+                        border: none;
+                    }
+                    
+                    .product-single .product__actions .quantity input,
+                    .woocommerce-variation-add-to-cart .variations_button .woocommerce-variation-add-to-cart-enabled .quantity,
+                    .checkmark {
+                        display: none;
+                    }
+                    
+                    .main_title_wrap {
+                        position: relative;
+                        height: 115px;
+                        padding-left: 15px;
+                        margin: 30px 0;
+                        box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+                        -webkit-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+                        -moz-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+                        transition: all 0.3s ease-in;
+                        border-radius: 5px;
+                        border: 2px solid #ffffff00;
+                    }
+                    
+                    .main_title_wrap .var_txt {
+                        position: absolute;
+                        top: 24px;
+                        width: 100%;
+                        font-size: <?php echo esc_attr($font_size) . 'px'; ?>;
+                    }
+
+                    .main_title_wrap.active,
+                    .main_title_wrap:hover {
+                        background: <?php echo esc_attr($active_bg_color); ?>;
+                        border: 2px solid <?php echo esc_attr($active_border_color); ?>;
+                    }
+            
+                    .price {
+                        color: <?php echo esc_attr($price_color); ?>;
+                        font-weight: bold;
+                        font-size: <?php echo esc_attr($price_font_size) . 'px'; ?>;
+                        visibility: visible !important; /* Ensure prices are visible */
+                        word-spacing: normal !important;
+                    }
+                    
+                    .old_price {
+                        text-decoration: line-through;
+                        color: <?php echo esc_attr($old_price_color); ?>;
+                        font-weight: bold;
+                        font-size: <?php echo esc_attr($old_price_font_size) . 'px'; ?>;
+                    }
+                    
+                    .main_title_wrap input {
+                        position: absolute;
+                        top: 27px;
+                    }
+                    
+                    .upsell-container .variable_content {
+                        margin-top: 40px;
+                    }
+                    
+                    .upsell-container .variable_title {
+                        margin-left: 24px !important;
+                        font-size: 16px;
+                        font-weight: 700;
+                    }
+                    
+                    .upsell-container .variable_desc {
+                        font-size: <?php echo esc_attr($variable_desc_font_size) . 'px'; ?>;
+                        padding-top: 7px;
+                        display: block;
+                    }
+                    
+                    .upsell-container .variable_img {
+                        width: 16%;
+                        float: right;
+                        margin-top: 18px;
+                        margin-right: 10px;
+                        border: 1px solid <?php echo esc_attr($image_border_color); ?>;
+                        border-radius: 5px;
+                    }
+
+                    .variations_form .variations {
+                        padding-top: 0;
+                    }
+                    
+                    .product-single .product__actions .single_variation_wrap .woocommerce-variation {
+                        height: 40px;
+                        padding: 12px 50px 20px 160px;
+                    }
+            
+                    .label_1 {
+                        font-size: <?php echo esc_attr($label_1_font_size) . 'px'; ?>;
+                        color: <?php echo esc_attr($label_1_color); ?>;
+                        font-weight: 600;
+                        position: absolute;
+                        top: 0;
+                        right: 0;
+                        border-radius: 0 0 0 75px;
+                        padding: 0 18px;
+                        background: <?php echo esc_attr($label_1_bg_color); ?>;
+                    }
+
+                    .label_2 {
+                        font-size: <?php echo esc_attr($label_2_font_size) . 'px'; ?>;
+                        color: <?php echo esc_attr($label_2_color); ?>;
+                        font-weight: 600;
+                        position: absolute;
+                        top: 0;
+                        right: 0;
+                        border-radius: 0 0 0 75px;
+                        padding: 0 18px;
+                        background: <?php echo esc_attr($label_2_bg_color); ?>;
+                    }
+                    
+                    .free_delivery {
+                        font-size: <?php echo esc_attr($free_delivery_font_size) . 'px'; ?>;
+                        color: <?php echo esc_attr($free_delivery_color); ?>;
+                        font-weight: 600;
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        border-radius: 0 0 75px 0;
+                        padding: 0 18px;
+                        background: <?php echo esc_attr($free_delivery_bg_color); ?>;
+                    }
+                </style>
+            <?php } ?>
+
             <style>
-                .product-single .product__actions .product__actions__inner {
-                    border: none;
-                }
-                
-                .product-single .product__actions .quantity input,
-                .woocommerce-variation-add-to-cart .variations_button .woocommerce-variation-add-to-cart-enabled .quantity,
-                .checkmark {
-                    display: none;
-                }
-                
-                .main_title_wrap {
-                    position: relative;
-                    height: 115px;
-                    padding-left: 15px;
-                    margin: 30px 0;
-                    box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
-                    -webkit-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
-                    -moz-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
-                    transition: all 0.3s ease-in;
-                    border-radius: 5px;
-                    border: 2px solid #ffffff00;
-                }
-                
-                .main_title_wrap .var_txt {
-                    position: absolute;
-                    top: 24px;
-                    width: 100%;
-                    font-size: <?php echo esc_attr($font_size) . 'px'; ?>;
-                }
-
-                .main_title_wrap.active,
-                .main_title_wrap:hover {
-                    background: <?php echo esc_attr($active_bg_color); ?>;
-                    border: 2px solid <?php echo esc_attr($active_border_color); ?>;
-                }
-        
-                .price {
-                    color: <?php echo esc_attr($price_color); ?>;
-                    font-weight: bold;
-                    font-size: <?php echo esc_attr($price_font_size) . 'px'; ?>;
-                    visibility: visible !important; /* Ensure prices are visible */
-                    word-spacing: normal !important;
-                }
-                
-                .old_price {
-                    text-decoration: line-through;
-                    color: <?php echo esc_attr($old_price_color); ?>;
-                    font-weight: bold;
-                    font-size: <?php echo esc_attr($old_price_font_size) . 'px'; ?>;
-                }
-                
-                .main_title_wrap input {
-                    position: absolute;
-                    top: 27px;
-                }
-                
-                .upsell-container .variable_content {
-                    margin-top: 40px;
-                }
-                
-                .upsell-container .variable_title {
-                    margin-left: 24px !important;
-                    font-size: 16px;
-                    font-weight: 700;
-                }
-                
-                .upsell-container .variable_desc {
-                    font-size: <?php echo esc_attr($variable_desc_font_size) . 'px'; ?>;
-                    padding-top: 7px;
-                    display: block;
-                }
-                
-                .upsell-container .variable_img {
-                    width: 16%;
-                    float: right;
-                    margin-top: 18px;
-                    margin-right: 10px;
-                    border: 1px solid <?php echo esc_attr($image_border_color); ?>;
-                    border-radius: 5px;
-                }
-
-                .variations_form .variations {
-                    padding-top: 0;
-                }
-                
-                .product-single .product__actions .single_variation_wrap .woocommerce-variation {
-                    height: 40px;
-                    padding: 12px 50px 20px 160px;
-                }
-        
-                .label_1 {
-                    font-size: <?php echo esc_attr($label_1_font_size) . 'px'; ?>;
-                    color: <?php echo esc_attr($label_1_color); ?>;
-                    font-weight: 600;
-                    position: absolute;
-                    top: 0;
-                    right: 0;
-                    border-radius: 0 0 0 75px;
-                    padding: 0 18px;
-                    background: <?php echo esc_attr($label_1_bg_color); ?>;
-                }
-
-                .label_2 {
-                    font-size: <?php echo esc_attr($label_2_font_size) . 'px'; ?>;
-                    color: <?php echo esc_attr($label_2_color); ?>;
-                    font-weight: 600;
-                    position: absolute;
-                    top: 0;
-                    right: 0;
-                    border-radius: 0 0 0 75px;
-                    padding: 0 18px;
-                    background: <?php echo esc_attr($label_2_bg_color); ?>;
-                }
-                
-                .free_delivery {
-                    font-size: <?php echo esc_attr($free_delivery_font_size) . 'px'; ?>;
-                    color: <?php echo esc_attr($free_delivery_color); ?>;
-                    font-weight: 600;
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    border-radius: 0 0 75px 0;
-                    padding: 0 18px;
-                    background: <?php echo esc_attr($free_delivery_bg_color); ?>;
-                }
-
                 .savings-text {
                     font-weight: normal;
                     font-size: <?php echo esc_attr($savings_text_size); ?>;
