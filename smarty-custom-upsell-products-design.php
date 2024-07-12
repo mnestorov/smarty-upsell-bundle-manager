@@ -777,6 +777,8 @@ if (!function_exists('smarty_public_custom_css')) {
                     color: <?php echo esc_attr($price_color); ?>;
                     font-weight: bold;
                     font-size: <?php echo esc_attr($price_font_size) . 'px'; ?>;
+                    visibility: visible !important; /* Ensure prices are visible */
+                    word-spacing: normal !important;
                 }
                 
                 .old_price {
@@ -862,6 +864,7 @@ if (!function_exists('smarty_public_custom_css')) {
                 }
 
                 .savings-text {
+                    font-weight: normal;
                     font-size: <?php echo esc_attr($savings_text_size); ?>;
                     color: <?php echo esc_attr($savings_text_color); ?>;
                 }
@@ -874,8 +877,18 @@ if (!function_exists('smarty_public_custom_css')) {
                 }
 
                  /* Additional products*/
-                 .additional-products {
-                    margin-top: 20px;
+                .additional-products {
+                    margin-bottom: 20px;
+                    padding: 20px 20px 0 20px;
+                    border: 2px dashed rgba(112,153,0, 0.7);
+                    border-radius: 5px;
+                    background: rgba(112,153,0, 0.075);
+                }
+
+                .additional-products p {
+                    text-align: center;
+                    line-height: normal;
+                    font-weight: normal;
                 }
 
                 .additional-products label {
@@ -883,8 +896,9 @@ if (!function_exists('smarty_public_custom_css')) {
                     align-items: center;
                     padding: 10px;
                     margin-bottom: 30px;
-                    border-radius: 5px;
+                    background: #ffffff;
                     border: 2px solid #ffffff00;
+                    border-radius: 5px;
                     box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
                     -webkit-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
                     -moz-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
@@ -892,8 +906,9 @@ if (!function_exists('smarty_public_custom_css')) {
 
                 .additional-products label.active, 
                 .additional-products label:hover {
-                    background: <?php echo esc_attr($active_bg_color); ?>;
-                    border: 2px solid <?php echo esc_attr($active_border_color); ?>;
+                    background: #ffffff;
+                    border: 2px solid rgb(112,153,0);
+                    transition: all 0.3s ease-in;
                 }
 
                 .additional-products input[type="checkbox"] {
@@ -901,7 +916,7 @@ if (!function_exists('smarty_public_custom_css')) {
                     height: 20px;
                     margin-right: 10px;
                     border-radius: 3px;
-                    background-color: #f0f4e5;
+                    background-color: rgba(112,153,0, 0.075);
                     border: 1px solid rgb(112,153,0);
                     cursor: pointer;
                     -webkit-appearance: none;
@@ -927,7 +942,7 @@ if (!function_exists('smarty_public_custom_css')) {
                 }
 
                 .additional-product-image {
-                    width: 16%;
+                    width: 18%;
                     margin-right: 10px;
                     border: 1px solid <?php echo esc_attr($image_border_color); ?>;
                     border-radius: 5px;
@@ -937,11 +952,6 @@ if (!function_exists('smarty_public_custom_css')) {
                     margin-right: auto;
                 }
 
-                .additional-product-price {
-                    font-size: <?php echo esc_attr($price_font_size) . 'px'; ?>;
-                    color: <?php echo esc_attr($price_color); ?>;
-                    display: block;
-                }
 
                 .additional-product-regular-price > .woocommerce-Price-amount.amount bdi {
                     font-size: <?php echo esc_attr($old_price_font_size) . 'px'; ?>;
@@ -953,6 +963,64 @@ if (!function_exists('smarty_public_custom_css')) {
                     font-size: <?php echo esc_attr($price_font_size) . 'px'; ?>;
                     color: <?php echo esc_attr($price_color); ?>;
                     font-weight: bold;
+                }
+
+                /* Ribbon styles */
+                .additional-products-title {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    position: relative;
+                }
+
+                .additional-products-title p {
+                    margin: 0;
+                    padding-right: 10px; /* Adjust spacing as needed */
+                    font-weight: bold;
+                    text-transform: uppercase;
+                }
+
+                .ribbon {
+                    background: #FFD966;
+                    color: #333333;
+                    padding: 5px 10px;
+                    font-size: 14px;
+                    font-weight: bold;
+                    position: relative;
+                    top: 0;
+                    height: 24px; /* Adjust height as needed */
+                    line-height: 25px; /* Adjust line-height as needed */
+                }
+
+                .ribbon:before, .ribbon:after {
+                    content: "";
+                    position: absolute;
+                    display: block;
+                    top: 0;
+                    bottom: 0;
+                    width: 0;
+                    height: 0;
+                    border-style: solid;
+                    border-color: transparent;
+                }
+
+                .ribbon:before {
+                    left: -10px;
+                    border-width: 12.5px 10px;
+                    border-right-color: #FFD966;
+                }
+
+                .ribbon:after {
+                    right: -10px;
+                    border-width: 12.5px 10px;
+                    border-left-color: transparent;
+                    border-top-color: #FFD966;
+                    border-bottom-color: #FFD966;
+                }
+
+                .ribbon span {
+                    position: relative;
+                    top: -5px;
                 }
             </style><?php
         }
@@ -1068,7 +1136,10 @@ if (!function_exists('smarty_public_custom_js')) {
                         return ''; // if disabled, return an empty string
                     }
                     var savings = regularPrice - salePrice;
-                    return '<span class="savings-text" style="font-size:' + savingsTextSize + '; color:' + savingsTextColor + ';">(' + youSaveText + ' ' + formatPrice(savings.toFixed(2), false) + ')</span>';
+                    
+                    // Remove <bdi> tags from formatted savings
+                    var formattedSavings = formatPrice(savings.toFixed(2), false);
+                    return '<span class="savings-text" style="font-size:' + savingsTextSize + '; color:' + savingsTextColor + ';">(' + youSaveText + ' ' + formattedSavings + ')</span>';
                 }
 
                 setActiveUpsell();
@@ -1098,7 +1169,30 @@ if (!function_exists('smarty_public_custom_js')) {
                         $(this).text(formatPrice(priceText, $(this).hasClass('old_price')));
                     }
                 });
+                
+                // Update additional product prices and savings
+                $('input[name="additional_products[]"]').each(function() {
+                    var regularPrice = parseFloat($(this).data('regular-price'));
+                    var salePrice = parseFloat($(this).data('sale-price'));
 
+                    //console.log("Debug - Additional Product:", {
+                    //    id: $(this).val(),
+                    //    regularPrice: regularPrice,
+                    //    salePrice: salePrice
+                    //});
+
+                    if (salePrice && regularPrice) {
+                        var formattedRegularPrice = formatPrice(regularPrice.toFixed(2));
+                        var formattedSalePrice = formatPrice(salePrice.toFixed(2));
+                        var savingsMessage = formatSavings(regularPrice, salePrice);
+
+                        $(this).closest('label').find('.additional-product-price').html('<span class="price old_price">' + formattedRegularPrice + '</span> <span class="price">' + formattedSalePrice + '</span> ' + savingsMessage);
+                    } else if (regularPrice) {
+                        var formattedPrice = formatPrice(regularPrice.toFixed(2));
+                        $(this).closest('label').find('.additional-product-price').html('<span class="price">' + formattedPrice + '</span>');
+                    }
+                });
+                
                 $('form.cart').on('submit', function(e) {
                     e.preventDefault();
 
@@ -1125,6 +1219,24 @@ if (!function_exists('smarty_public_custom_js')) {
                         }
                     });
                 });
+
+                function updateActiveState() {
+                    $('input[name="additional_products[]"]').each(function() {
+                        if ($(this).is(':checked')) {
+                            $(this).closest('label').addClass('active');
+                        } else {
+                            $(this).closest('label').removeClass('active');
+                        }
+                    });
+                }
+
+                // Initial update to handle any pre-checked boxes
+                updateActiveState();
+
+                // Update on checkbox change
+                $('body').on('change', 'input[name="additional_products[]"]', function() {
+                    updateActiveState();
+                });
             });
         </script>
         <?php
@@ -1146,15 +1258,14 @@ if (!function_exists('smarty_add_additional_products_checkbox')) {
                 'limit' => -1,
             ));
 
+            $total_savings = 0;
+
             if ($additional_products) {
-                echo '<div class="additional-products">';
-                echo '<p><strong>' . __('You can also add', 'smarty-custom-upsell-products-design') . '</strong></p>';
                 foreach ($additional_products as $additional_product) {
                     $product_obj = wc_get_product($additional_product->get_id());
-                    $product_image = $product_obj->get_image('thumbnail');
                     $regular_price = $product_obj->get_regular_price();
                     $sale_price = $product_obj->get_sale_price();
-                    
+
                     // If the product is variable, get the price of the first variation
                     if ($product_obj->is_type('variable')) {
                         $available_variations = $product_obj->get_available_variations();
@@ -1165,15 +1276,68 @@ if (!function_exists('smarty_add_additional_products_checkbox')) {
                         }
                     }
 
-                    $price_html = $sale_price ? 
-                        '<span class="additional-product-regular-price">' . wc_price($regular_price) . '</span> <span class="additional-product-sale-price">' . wc_price($sale_price) . '</span>' :
-                        '<span class="additional-product-price">' . wc_price($regular_price) . '</span>';
+                    // Calculate total savings
+                    if ($regular_price && $sale_price) {
+                        $total_savings += ($regular_price - $sale_price);
+                    }
+                }
+
+                // Get currency settings
+                $currency_symbol = html_entity_decode(get_woocommerce_currency_symbol());
+                $currency_position = get_option('smarty_currency_symbol_position', 'left');
+                $currency_spacing = get_option('smarty_currency_symbol_spacing', 'no_space');
+                $spacing = ($currency_spacing === 'space') ? ' ' : '';
+
+                // Format the total savings with currency settings
+                $formatted_total_savings = number_format($total_savings, 2, wc_get_price_decimal_separator(), wc_get_price_thousand_separator());
+                if ($currency_position === 'left') {
+                    $formatted_total_savings = $currency_symbol . $spacing . $formatted_total_savings;
+                } else {
+                    $formatted_total_savings = $formatted_total_savings . $spacing . $currency_symbol;
+                }
+
+                echo '<div class="additional-products">';
+                echo '<div class="additional-products-title">';
+                echo '<p>' . __('One or two more', 'smarty-custom-upsell-products-design') . '</p>';
+                echo '<div class="ribbon"><span>' . sprintf(__('SAVE %s', 'smarty-custom-upsell-products-design'), $formatted_total_savings) . '</span></div>';
+                echo '</div>';
+                echo '<p>' . sprintf(__('Get up to %s off when you bundle one or more products.', 'smarty-custom-upsell-products-design'), $formatted_total_savings) . '</p>';
+                foreach ($additional_products as $additional_product) {
+                    $product_obj = wc_get_product($additional_product->get_id());
+                    $product_image = $product_obj->get_image('thumbnail');
+                    $regular_price = $product_obj->get_regular_price();
+                    $sale_price = $product_obj->get_sale_price();
+
+                    // If the product is variable, get the price of the first variation
+                    if ($product_obj->is_type('variable')) {
+                        $available_variations = $product_obj->get_available_variations();
+                        if (!empty($available_variations)) {
+                            $variation = reset($available_variations);
+                            $regular_price = $variation['display_regular_price'];
+                            $sale_price = $variation['display_price'];
+                        }
+                    }
+
+                    // Ensure regular_price and sale_price are set
+                    $data_regular_price = !empty($regular_price) ? esc_attr($regular_price) : '0';
+                    $data_sale_price = !empty($sale_price) ? esc_attr($sale_price) : '0';
+
+                    $price_html = '';
+                    if ($sale_price) {
+                        $price_html = '<span class="price">' . wc_price($sale_price) . '</span>';
+                        if ($regular_price > $sale_price) {
+                            $price_html = '<span class="price old_price">' . wc_price($regular_price) . '</span> <span class="price">' . wc_price($sale_price) . '</span>';
+                        }
+                    } else {
+                        $price_html = '<span class="price">' . wc_price($regular_price) . '</span>';
+                    }
+
                     echo '<label>';
-                    echo '<input type="checkbox" name="additional_products[]" value="' . esc_attr($additional_product->get_id()) . '">';
+                    echo '<input type="checkbox" name="additional_products[]" value="' . esc_attr($additional_product->get_id()) . '" data-regular-price="' . $data_regular_price . '" data-sale-price="' . $data_sale_price . '">';
                     echo '<div class="additional-product-image">' . $product_image . '</div>';
                     echo '<div>';
                     echo '<div class="additional-product-title">' . esc_html($additional_product->get_name()) . '</div>';
-                    echo '<div>' . $price_html . '</div>';
+                    echo '<div class="additional-product-price">' . $price_html . '</div>';
                     echo '</div>';
                     echo '</label>';
                 }
@@ -1188,24 +1352,51 @@ if (!function_exists('smarty_update_total_price')) {
     function smarty_update_total_price() {
         $amount_text = esc_js(__('Amount: ', 'smarty-custom-upsell-products-design'));
         $currency_symbol = get_woocommerce_currency_symbol();
+        $currency_position = get_option('smarty_currency_symbol_position', 'left');
+        $currency_spacing = get_option('smarty_currency_symbol_spacing', 'no_space');
+        $decimal_separator = wc_get_price_decimal_separator();
+        $thousand_separator = wc_get_price_thousand_separator();
+        $decimals = wc_get_price_decimals();
+        $spacing = ($currency_spacing === 'space') ? ' ' : '';
         ?>
         <script type="text/javascript">
             jQuery(document).ready(function($) {
                 var amountText = '<?php echo $amount_text; ?>';
                 var currencySymbol = '<?php echo $currency_symbol; ?>';
+                var currencyPosition = '<?php echo $currency_position; ?>';
+                var currencySpacing = '<?php echo $spacing; ?>';
+                var decimalSeparator = '<?php echo $decimal_separator; ?>';
+                var thousandSeparator = '<?php echo $thousand_separator; ?>';
+                var decimals = <?php echo $decimals; ?>;
+
+                function formatPrice(price) {
+                    var formattedPrice = parseFloat(price).toLocaleString(undefined, {
+                        minimumFractionDigits: decimals,
+                        maximumFractionDigits: decimals,
+                        style: 'decimal',
+                        useGrouping: true
+                    });
+
+                    formattedPrice = formattedPrice.replace('.', decimalSeparator);
+
+                    if (currencyPosition === 'left') {
+                        return currencySymbol + currencySpacing + formattedPrice;
+                    } else {
+                        return formattedPrice + currencySpacing + currencySymbol;
+                    }
+                }
 
                 function updateTotalPrice() {
                     var basePrice = parseFloat($('.single_variation_wrap .woocommerce-variation-price').data('base-price')) || 0;
                     var additionalPrice = 0;
                     $('input[name="additional_products[]"]:checked').each(function() {
-                        var label = $(this).closest('label');
-                        var regularPrice = parseFloat(label.find('.additional-product-regular-price').text().replace(/[^\d.,]/g, '').replace(',', '.'));
-                        var salePrice = parseFloat(label.find('.additional-product-sale-price').text().replace(/[^\d.,]/g, '').replace(',', '.'));
+                        var regularPrice = parseFloat($(this).data('regular-price')) || 0;
+                        var salePrice = parseFloat($(this).data('sale-price')) || 0;
                         var price = salePrice || regularPrice;
                         additionalPrice += price;
                     });
                     var totalPrice = basePrice + additionalPrice;
-                    $('.single_variation_wrap .woocommerce-variation-price').html(amountText + '<strong>' + totalPrice.toFixed(2) + ' ' + currencySymbol + '</strong>');
+                    $('.single_variation_wrap .woocommerce-variation-price').html(amountText + '<strong>' + formatPrice(totalPrice) + '</strong>');
                 }
 
                 $('body').on('change', 'input[name="additional_products[]"]', function() {
@@ -1213,7 +1404,7 @@ if (!function_exists('smarty_update_total_price')) {
                 });
 
                 $('body').on('show_variation', function(event, variation) {
-                    var basePrice = parseFloat(variation.display_price);
+                    var basePrice = parseFloat(variation.display_price) || 0;
                     $('.single_variation_wrap .woocommerce-variation-price').data('base-price', basePrice);
                     updateTotalPrice();
                 });
