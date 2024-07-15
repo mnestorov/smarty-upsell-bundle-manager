@@ -71,6 +71,7 @@ if (!function_exists('smarty_register_settings')) {
         register_setting('smarty_settings_group', 'smarty_free_delivery_font_size');
         register_setting('smarty_settings_group', 'smarty_label_1_font_size');
         register_setting('smarty_settings_group', 'smarty_label_2_font_size');
+        register_setting('smarty_settings_group', 'smarty_custom_css');
         register_setting('smarty_settings_group', 'smarty_currency_symbol_position');
         register_setting('smarty_settings_group', 'smarty_currency_symbol_spacing');
         register_setting('smarty_settings_group', 'smarty_savings_text_size');
@@ -85,6 +86,7 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_section('smarty_additional_products_section', 'Additional Products', 'smarty_additional_products_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_colors_section', 'Colors', 'smarty_colors_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_font_sizes_section', 'Font Sizes', 'smarty_font_sizes_section_cb', 'smarty_settings_page');
+        add_settings_section('smarty_custom_css_section', 'Custom Styling', 'smarty_custom_css_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_currency_section', 'Currency Symbol', 'smarty_currency_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_display_options_section', 'Display Options', 'smarty_display_options_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_settings_section', 'Debug', 'smarty_settings_section_cb', 'smarty_settings_page');
@@ -117,6 +119,9 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_field('smarty_label_2_font_size', 'Label 2', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_label_2_font_size']);
         add_settings_field('smarty_savings_text_size', 'Savings Text', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_savings_text_size']);
         
+        // Add textarea field for the custom styling
+        add_settings_field('smarty_custom_css', 'Custom CSS', 'smarty_textarea_field_cb', 'smarty_settings_page', 'smarty_custom_css_section', ['id' => 'smarty_custom_css']);
+
         // Add settings fields for currency
         add_settings_field('smarty_currency_symbol_position', 'Position', 'smarty_currency_position_field_cb', 'smarty_settings_page', 'smarty_currency_section', ['id' => 'smarty_currency_symbol_position']);
         add_settings_field('smarty_currency_symbol_spacing', 'Spacing', 'smarty_currency_spacing_field_cb', 'smarty_settings_page', 'smarty_currency_section', ['id' => 'smarty_currency_symbol_spacing']);
@@ -149,6 +154,36 @@ if (!function_exists('smarty_colors_section_cb')) {
     }
 }
 
+if (!function_exists('smarty_font_sizes_section_cb')) {
+    function smarty_font_sizes_section_cb() {
+        echo '<p>Customize the font sizes for various elements in your WooCommerce upsell products.</p>';
+    }
+}
+
+if (!function_exists('smarty_custom_css_cb')) {
+    function smarty_custom_css_section_cb() {
+        echo '<p>Add custom styling to the variation (upsell) products or to the additional products.</p>';
+    }
+}
+
+if (!function_exists('smarty_currency_section_cb')) {
+    function smarty_currency_section_cb() {
+        echo '<p>Customize the currency symbol position and spacing for your WooCommerce upsell products.</p>';
+    }
+}
+
+if (!function_exists('smarty_display_options_section_cb')) {
+    function smarty_display_options_section_cb() {
+        echo '<p>Display options for the plugin.</p>';
+    }
+}
+
+if (!function_exists('smarty_settings_section_cb')) {
+    function smarty_settings_section_cb() {
+        echo '<p>Adjust debug settings for the plugin.</p>';
+    }
+}
+
 if (!function_exists('smarty_checkbox_field_cb')) {
     function smarty_checkbox_field_cb($args) {
         $option = get_option($args['id'], '0'); // Default to unchecked
@@ -167,34 +202,6 @@ if (!function_exists('smarty_checkbox_field_cb')) {
         }
     }
 }
-
-if (!function_exists('smarty_color_field_cb')) {
-    function smarty_color_field_cb($args) {
-        $option = get_option($args['id'], '');
-        echo '<input type="text" name="' . $args['id'] . '" value="' . esc_attr($option) . '" class="smarty-color-field" data-default-color="' . esc_attr($option) . '" />';
-    }
-}
-
-if (!function_exists('smarty_font_sizes_section_cb')) {
-    function smarty_font_sizes_section_cb() {
-        echo '<p>Customize the font sizes for various elements in your WooCommerce upsell products.</p>';
-    }
-}
-
-if (!function_exists('smarty_font_size_field_cb')) {
-    function smarty_font_size_field_cb($args) {
-        $option = get_option($args['id'], '14');
-        echo '<input type="range" name="' . $args['id'] . '" min="10" max="30" value="' . esc_attr($option) . '" class="smarty-font-size-slider" />';
-        echo '<span id="' . $args['id'] . '-value">' . esc_attr($option) . 'px</span>';
-    }
-}
-
-if (!function_exists('smarty_currency_section_cb')) {
-    function smarty_currency_section_cb() {
-        echo '<p>Customize the currency symbol position and spacing for your WooCommerce upsell products.</p>';
-    }
-}
-
 
 if (!function_exists('smarty_choose_additional_products_field_cb')) {
     function smarty_choose_additional_products_field_cb() {
@@ -222,6 +229,28 @@ if (!function_exists('smarty_choose_additional_products_field_cb')) {
     }
 }
 
+if (!function_exists('smarty_color_field_cb')) {
+    function smarty_color_field_cb($args) {
+        $option = get_option($args['id'], '');
+        echo '<input type="text" name="' . $args['id'] . '" value="' . esc_attr($option) . '" class="smarty-color-field" data-default-color="' . esc_attr($option) . '" />';
+    }
+}
+
+if (!function_exists('smarty_font_size_field_cb')) {
+    function smarty_font_size_field_cb($args) {
+        $option = get_option($args['id'], '14');
+        echo '<input type="range" name="' . $args['id'] . '" min="10" max="30" value="' . esc_attr($option) . '" class="smarty-font-size-slider" />';
+        echo '<span id="' . $args['id'] . '-value">' . esc_attr($option) . 'px</span>';
+    }
+}
+
+if (!function_exists('smarty_textarea_field_cb')) {
+    function smarty_textarea_field_cb($args) {
+        $option = get_option($args['id'], '');
+        echo '<textarea name="' . $args['id'] . '" id="' . $args['id'] . '" rows="10" cols="50" class="large-text">' . esc_textarea($option) . '</textarea>';
+    }
+}
+
 if (!function_exists('smarty_currency_position_field_cb')) {
     function smarty_currency_position_field_cb($args) {
         $option = get_option($args['id'], 'left');
@@ -239,33 +268,6 @@ if (!function_exists('smarty_currency_spacing_field_cb')) {
         echo '<option value="space"' . selected($option, 'space', false) . '>With Space</option>';
         echo '<option value="no_space"' . selected($option, 'no_space', false) . '>Without Space</option>';
         echo '</select>';
-    }
-}
-
-if (!function_exists('smarty_display_options_section_cb')) {
-    function smarty_display_options_section_cb() {
-        echo '<p>Display options for the plugin.</p>';
-    }
-}
-
-if (!function_exists('smarty_settings_section_cb')) {
-    function smarty_settings_section_cb() {
-        echo '<p>Adjust debug settings for the plugin.</p>';
-    }
-}
-
-if (!function_exists('smarty_checkbox_field_cb')) {
-    function smarty_checkbox_field_cb($args) {
-        $option = get_option($args['id'], '');
-        $checked = checked(1, $option, false);
-        echo "<label class='smarty-toggle-switch'>";
-        echo "<input type='checkbox' id='{$args['id']}' name='{$args['id']}' value='1' {$checked} />";
-        echo "<span class='smarty-slider round'></span>";
-        echo "</label>";
-        // Display the description only for the debug mode checkbox
-        if ($args['id'] == 'smarty_debug_mode') {
-            echo '<p class="description">' . __('Copies specific template files from a plugin directory to a child theme directory in WordPress. <br><em><b>Important:</b> <span class="smarty-text-danger">Turn this to Off in production.</span></em>', 'smarty-custom-upsell-products-design') . '</p>';
-        }
     }
 }
 
@@ -775,6 +777,7 @@ if (!function_exists('smarty_public_custom_css')) {
         $savings_text_size = get_option('smarty_savings_text_size', '14') . 'px';
         $savings_text_color = get_option('smarty_savings_text_color', '#000000');
         $image_border_color = get_option('smarty_image_border_color', '#000000');
+        $custom_css = get_option('smarty_custom_css', '');
 
         if (is_product()) { ?>
             <?php if ($upsell_styling_enabled) { ?>
@@ -1067,6 +1070,8 @@ if (!function_exists('smarty_public_custom_css')) {
                     position: relative;
                     top: -5px;
                 }
+
+                <?php echo $custom_css; // Output the custom CSS ?>
             </style><?php
         }
     }
