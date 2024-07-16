@@ -55,6 +55,7 @@ if (!function_exists('smarty_register_settings')) {
         register_setting('smarty_settings_group', 'smarty_enable_upsell_styling');
         register_setting('smarty_settings_group', 'smarty_enable_additional_products');
         register_setting('smarty_settings_group', 'smarty_choose_additional_products');
+        register_setting('smarty_settings_group', 'smarty_choose_products_to_show');
         register_setting('smarty_settings_group', 'smarty_active_bg_color');
         register_setting('smarty_settings_group', 'smarty_active_border_color');
         register_setting('smarty_settings_group', 'smarty_price_color');
@@ -94,8 +95,9 @@ if (!function_exists('smarty_register_settings')) {
         // Add settings fields for additional products features
         add_settings_field('smarty_enable_upsell_styling', 'Enable Variations (Upsell) Styling', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_upsell_styling_section', ['id' => 'smarty_enable_upsell_styling']);
         add_settings_field('smarty_enable_additional_products', 'Enable/Disable Additional Products', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_additional_products_section', ['id' => 'smarty_enable_additional_products']);
-        add_settings_field('smarty_choose_additional_products', 'Choose Products', 'smarty_choose_additional_products_field_cb', 'smarty_settings_page', 'smarty_additional_products_section');
-        
+        add_settings_field('smarty_choose_additional_products', 'Choose Bundle Products', 'smarty_choose_additional_products_field_cb', 'smarty_settings_page', 'smarty_additional_products_section');
+        add_settings_field('smarty_choose_products_to_show', 'Choose Products', 'smarty_choose_products_to_show_field_cb', 'smarty_settings_page', 'smarty_additional_products_section');
+
         // Add settings fields for colors
         add_settings_field('smarty_active_bg_color', 'Upsell (Background)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_active_bg_color']);
         add_settings_field('smarty_active_border_color', 'Upsell (Border)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_active_border_color']);
@@ -221,6 +223,31 @@ if (!function_exists('smarty_choose_additional_products_field_cb')) {
             jQuery(document).ready(function($) {
                 $('#smarty_choose_additional_products').select2({
                     placeholder: "Select additional products",
+                    allowClear: true
+                });
+            });
+        </script>
+        <?php
+    }
+}
+
+if (!function_exists('smarty_choose_products_to_show_field_cb')) {
+    function smarty_choose_products_to_show_field_cb() {
+        $bundle_products = get_option('smarty_choose_products_to_show', []);
+        $products_to_show = is_array($bundle_products) ? $bundle_products : [];
+        $products = wc_get_products(array('limit' => -1)); // Get all products
+
+        echo '<select name="smarty_choose_products_to_show[]" multiple="multiple" id="smarty_choose_products_to_show" style="width: 100%;">';
+        foreach ($products as $product) {
+            $selected = in_array($product->get_id(), $products_to_show) ? 'selected' : '';
+            echo '<option value="' . esc_attr($product->get_id()) . '" ' . esc_attr($selected) . '>' . esc_html($product->get_name()) . '</option>';
+        }
+        echo '</select>'; ?>
+
+        <script>
+            jQuery(document).ready(function($) {
+                $('#smarty_choose_products_to_show').select2({
+                    placeholder: "Select products where the bundleds will be displayed",
                     allowClear: true
                 });
             });
@@ -1316,6 +1343,14 @@ if (!function_exists('smarty_add_additional_products_checkbox')) {
             
         global $product;
 
+        // Get the selected products from the plugin settings
+        $products_to_show = get_option('smarty_choose_products_to_show', []);
+
+        // Check if the current product is in the chosen products list
+        if (!in_array($product->get_id(), $products_to_show)) {
+            return; // Exit if the current product is not in the chosen list
+        }
+
         // Get the additional products selected in plugin settings
         $additional_products_ids = get_option('smarty_choose_additional_products', []);
 
@@ -1507,7 +1542,6 @@ if (!function_exists('smarty_additional_product_recalculate_price')) {
             }
         }
     }
-    
 }
     
 if (!function_exists('smarty_display_additional_products_in_cart')) {
