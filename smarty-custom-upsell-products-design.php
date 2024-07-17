@@ -719,9 +719,9 @@ if (!function_exists('smarty_admin_custom_css')) {
                 .woocommerce_order_items .bundle-items {
                     width: 300px;
                     padding: 0 5px 0 5px;
-                    border: 1px dashed rgba(112, 153, 0, 0.7);
+                    border: 1px solid #bde5b9;
                     border-radius: 5px;
-                    background: rgba(112, 153, 0, 0.075);
+                    background: #edffeb;
                     position: relative;
                 }
                 
@@ -731,7 +731,7 @@ if (!function_exists('smarty_admin_custom_css')) {
                     right: 85px;
                     font-size: 80px;
                     transform: translateY(-50%) rotate(-15deg);
-                    color: rgba(112, 153, 0, 0.15);
+                    color: #bde5b9;
                 }
 
                 @media only screen and (max-width: 769px) {
@@ -766,7 +766,7 @@ if (!function_exists('smarty_admin_custom_css')) {
 
                 .column-is_bundle .dashicons-archive {
                     font-size: 20px;
-                    color: rgba(112, 153, 0, 0.7);
+                    color: #9cb576;
                 }
 
                 .column-is_bundle .dashicons {
