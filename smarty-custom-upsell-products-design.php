@@ -1665,7 +1665,7 @@ if (!function_exists('smarty_display_additional_products_order_meta')) {
             // Use ob_start to capture the output
             ob_start();
             echo '<div class="bundle-items">';
-            if (is_page('thank-you') || is_admin()) {
+            if (is_page('checkout') || is_admin()) {
                 echo '<span class="dashicons dashicons-archive"></span>';
             } 
             echo '<p><strong>' . __('In a bundle with', 'smarty-custom-upsell-products-design') . ':</strong></p>';
