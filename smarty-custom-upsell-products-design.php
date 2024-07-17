@@ -1628,14 +1628,39 @@ if (!function_exists('smarty_display_additional_products_in_cart')) {
 if (!function_exists('smarty_add_order_item_meta')) {
     function smarty_add_order_item_meta($item_id, $values, $cart_item_key) {
         if (isset($values['additional_products']) && is_array($values['additional_products'])) {
-                wc_add_order_item_meta($item_id, '_additional_products', $values['additional_products']);
-         }
+            wc_add_order_item_meta($item_id, '_additional_products', $values['additional_products']);
+
+            // Loop through each additional product and add its SKU to the order item meta with a hidden prefix
+            foreach ($values['additional_products'] as $additional_product_id) {
+                $additional_product = wc_get_product($additional_product_id);
+                if ($additional_product) {
+                    $additional_sku = $additional_product->get_sku();
+                    //error_log('Adding SKU for Additional Product ID: ' . $additional_product_id . ' - SKU: ' . $additional_sku); // Debug log
+                    wc_add_order_item_meta($item_id, '_hidden_additional_product_sku_' . $additional_product_id, $additional_sku, true);
+                } else {
+                    //error_log('Failed to get product object for Additional Product ID: ' . $additional_product_id);
+                }
+            }
+        }
+    }
+}
+
+if (!function_exists('smarty_hide_additional_product_skus')) {
+    function smarty_hide_additional_product_skus($hidden_meta_keys) {
+        global $wpdb;
+
+        // Get all order item meta keys with the hidden prefix
+        $hidden_meta_keys = array_merge($hidden_meta_keys, $wpdb->get_col("SELECT meta_key FROM {$wpdb->prefix}woocommerce_order_itemmeta WHERE meta_key LIKE '_hidden_additional_product_sku_%'"));
+        
+        return $hidden_meta_keys;
     }
 }
     
 if (!function_exists('smarty_display_additional_products_order_meta')) {
     function smarty_display_additional_products_order_meta($item_id, $item, $order) {
         $additional_products = wc_get_order_item_meta($item_id, '_additional_products', true);
+        //error_log('Additional Products: ' . print_r($additional_products, true)); // Debug log
+        
         if ($additional_products && is_array($additional_products)) {
             // Use ob_start to capture the output
             ob_start();
@@ -1648,6 +1673,7 @@ if (!function_exists('smarty_display_additional_products_order_meta')) {
             foreach ($additional_products as $additional_product_id) {
                 $product = wc_get_product($additional_product_id);
                 if ($product) {
+                    //error_log('Product ID: ' . $additional_product_id . ' - SKU: ' . $additional_sku); // Debug log
                     echo '<li>- 1 <small>x</small> ' . '<span>' . esc_html($product->get_name()) . '</span>' . ' (' . wc_price($product->get_price()) . ')</li>';
                     if (!is_page('checkout')) {
                         echo '<ul style="list-style-type: none !important; padding: 0 15px;"><li><span><small>- <strong>' . __('SKU: ', 'smarty-custom-upsell-products-design') . '</strong>' . esc_html($product->get_sku()) . '</span>' . '</small></li></ul>';
@@ -1724,4 +1750,5 @@ if (get_option('smarty_enable_additional_products', '1') === '1') {
     add_action('woocommerce_add_order_item_meta', 'smarty_add_order_item_meta', 10, 3);
     add_action('woocommerce_order_item_meta_end', 'smarty_display_additional_products_order_meta', 10, 3);
     add_action('woocommerce_after_order_itemmeta', 'smarty_display_additional_products_order_meta', 10, 3);
+    add_filter('woocommerce_hidden_order_itemmeta', 'smarty_hide_additional_product_skus');
 }
