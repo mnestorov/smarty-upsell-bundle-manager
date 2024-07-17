@@ -512,16 +512,15 @@ if (!function_exists('smarty_variable_price_range')) {
      */
     function smarty_variable_price_range($wc_variable_price, $product) {
         $prefix = '';
-        $wc_variable_min_sale_price = null;
+        $wc_variable_min_sale_price = $product->get_variation_sale_price('min', true);
         $wc_variable_reg_min_price = $product->get_variation_regular_price('min', true);
-        $wc_variable__min_sale_price = $product->get_variation_sale_price('min', true);
-        $wc_variable__max_price = $product->get_variation_price('max', true);
-        $wc_variable__min_price = $product->get_variation_price('min', true);
-        $wc_variable__price = ($wc_variable_min_sale_price == $wc_variable_reg_min_price) 
+        $wc_variable_max_price = $product->get_variation_price('max', true);
+        $wc_variable_min_price = $product->get_variation_price('min', true);
+        $wc_variable_price_html = ($wc_variable_min_sale_price == $wc_variable_reg_min_price) 
             ? wc_price($wc_variable_reg_min_price) 
             : wc_price($wc_variable_min_sale_price);
 
-        return ($wc_variable_min_price == $wc_variable_max_price) ? $wc_variable_price : sprintf('%s%s', $prefix, $wc_variable_price);
+        return ($wc_variable_min_price == $wc_variable_max_price) ? $wc_variable_price_html : sprintf('%s%s', $prefix, $wc_variable_price_html);
     }
     add_filter('woocommerce_variable_sale_price_html', 'smarty_variable_price_range', 10, 2);
     add_filter('woocommerce_variable_price_html', 'smarty_variable_price_range', 10, 2);
@@ -714,6 +713,64 @@ if (!function_exists('smarty_admin_custom_css')) {
                     width: 49%;
                     float: left;
                     box-sizing: border-box;
+                }
+
+                /* Order Meta */
+                .woocommerce_order_items .bundle-items {
+                    width: 300px;
+                    padding: 0 5px 0 5px;
+                    border: 1px dashed rgba(112, 153, 0, 0.7);
+                    border-radius: 5px;
+                    background: rgba(112, 153, 0, 0.075);
+                    position: relative;
+                }
+                
+                .woocommerce_order_items .bundle-items .dashicons.dashicons-archive {
+                    position: absolute;
+                    top: 20%;
+                    right: 85px;
+                    font-size: 80px;
+                    transform: translateY(-50%) rotate(-15deg);
+                    color: rgba(112, 153, 0, 0.15);
+                }
+
+                @media only screen and (max-width: 769px) {
+                    .woocommerce_order_items .bundle-items .dashicons.dashicons-archive {
+                        display: none;
+                    } 
+                }
+
+                .woocommerce_order_items .bundle-items ul {
+                    list-style-type: none !important; 
+                    padding: 0 5px;
+                }
+
+                .woocommerce_order_items .bundle-items ul li {
+                    font-weight: normal;
+                }
+
+                .woocommerce_order_items .bundle-items p strong,
+                .woocommerce_order_items .bundle-items ul li span  {
+                    color: #888888;
+                }
+
+                .woocommerce_order_items .bundle-items ul li .woocommerce-Price-amount.amount bdi,
+                .woocommerce_order_items .bundle-items ul li .woocommerce-Price-currencySymbol {
+                    color: #3c434a;
+                }
+
+                /* Is Bundle column */
+                table.wp-list-table .column-is_bundle { 
+                    width: 1.5%; 
+                }
+
+                .column-is_bundle .dashicons-archive {
+                    font-size: 20px;
+                    color: rgba(112, 153, 0, 0.7);
+                }
+
+                .column-is_bundle .dashicons {
+                    margin: 0 auto;
                 }
 
                 /* Helpers */
@@ -1580,17 +1637,71 @@ if (!function_exists('smarty_display_additional_products_order_meta')) {
     function smarty_display_additional_products_order_meta($item_id, $item, $order) {
         $additional_products = wc_get_order_item_meta($item_id, '_additional_products', true);
         if ($additional_products && is_array($additional_products)) {
+            // Use ob_start to capture the output
+            ob_start();
+            echo '<div class="bundle-items">';
+            if (is_page('thank-you') || is_admin()) {
+                echo '<span class="dashicons dashicons-archive"></span>';
+            } 
             echo '<p><strong>' . __('In a bundle with', 'smarty-custom-upsell-products-design') . ':</strong></p>';
             echo '<ul style="list-style-type: none !important; padding: 0 5px;">';
             foreach ($additional_products as $additional_product_id) {
                 $product = wc_get_product($additional_product_id);
                 if ($product) {
-                    echo '<li style="font-weight: normal; font-size: 90%; margin: 5px 10px;"><strong>- 1</strong> <small>x</small> ' . esc_html($product->get_name()) . ' (' . wc_price($product->get_price()) . ')</li>';
+                    echo '<li>- 1 <small>x</small> ' . '<span>' . esc_html($product->get_name()) . '</span>' . ' (' . wc_price($product->get_price()) . ')</li>';
+                    if (!is_page('checkout')) {
+                        echo '<ul style="list-style-type: none !important; padding: 0 15px;"><li><span><small>- <strong>' . __('SKU: ', 'smarty-custom-upsell-products-design') . '</strong>' . esc_html($product->get_sku()) . '</span>' . '</small></li></ul>';
+                    }
                 }
             }
             echo '</ul>';
+            echo '</div>';
+            // Capture the output and assign it to a variable
+            $additional_products_html = ob_get_clean();
+            
+            // Display the additional products in the order item meta
+            echo $additional_products_html;
         }
-     }
+    }
+}
+
+if (!function_exists('smarty_add_order_list_column')) {
+    function smarty_add_order_list_column($columns) {
+        $new_columns = array();
+    
+        foreach ($columns as $key => $column) {
+            if ('order_number' === $key) {
+                $new_columns['is_bundle'] = '';
+            }
+            $new_columns[$key] = $column;
+        }
+    
+        return $new_columns;
+    }
+}
+
+if (!function_exists('smarty_add_order_list_column_content')) {
+    function smarty_add_order_list_column_content($column, $post_id) {
+        if ('is_bundle' === $column) {
+            $order = wc_get_order($post_id);
+            $items = $order->get_items();
+            $has_bundle = false;
+    
+            foreach ($items as $item_id => $item) {
+                $additional_products = wc_get_order_item_meta($item_id, '_additional_products', true);
+                if ($additional_products && is_array($additional_products)) {
+                    $has_bundle = true;
+                    break;
+                }
+            }
+    
+            if ($has_bundle) {
+                echo '<span class="dashicons dashicons-archive" title="' . __('This order contains bundled products', 'smarty-custom-upsell-products-design') . '"></span>';
+            } else {
+                echo '';
+            }
+        }
+    }
 }
 
 if (get_option('smarty_enable_additional_products', '1') === '1') {
@@ -1608,6 +1719,9 @@ if (get_option('smarty_enable_additional_products', '1') === '1') {
     add_filter('woocommerce_get_item_data', 'smarty_display_additional_products_in_cart', 10, 2);
     add_action('woocommerce_before_calculate_totals', 'smarty_calculate_cart_item_price', 10, 1);
     add_action('woocommerce_before_calculate_totals', 'smarty_additional_product_recalculate_price', 10, 1);
+    add_filter('manage_edit-shop_order_columns', 'smarty_add_order_list_column');
+    add_action('manage_shop_order_posts_custom_column', 'smarty_add_order_list_column_content', 10, 2);
     add_action('woocommerce_add_order_item_meta', 'smarty_add_order_item_meta', 10, 3);
-    add_action('woocommerce_order_item_meta_end', 'smarty_display_additional_products_order_meta', 10, 3); 
+    add_action('woocommerce_order_item_meta_end', 'smarty_display_additional_products_order_meta', 10, 3);
+    add_action('woocommerce_after_order_itemmeta', 'smarty_display_additional_products_order_meta', 10, 3);
 }
