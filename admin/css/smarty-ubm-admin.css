@@ -1,0 +1,149 @@
+/**
+ * All of the CSS for plugin admin functionality should be included in this file.
+ */
+
+.wp-color-result { 
+    vertical-align: middle; 
+}
+
+/* The switch - the box around the slider */
+
+.smarty-toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+/* Hide default HTML checkbox */
+
+.smarty-toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The slider */
+
+.smarty-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.smarty-slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .smarty-slider {
+    background-color: #2196F3;
+}
+
+input:checked + .smarty-slider:before {
+    transform: translateX(26px);
+}
+
+/* Rounded sliders */
+
+.smarty-slider.round {
+    border-radius: 34px;
+}
+
+.smarty-slider.round:before {
+    border-radius: 50%;
+}
+
+.woocommerce_variation .form-row {
+    overflow: hidden;
+}
+
+.woocommerce_variation .form-row.full {
+    clear: both;
+}
+
+.woocommerce_variation .form-row.form-row-first,
+.woocommerce_variation .form-row.form-row-last {
+    width: 49%;
+    float: left;
+    box-sizing: border-box;
+}
+
+/* Order Meta */
+
+.woocommerce_order_items .bundle-items {
+    width: 300px;
+    padding: 0 5px 0 5px;
+    border: 1px solid #bde5b9;
+    border-radius: 5px;
+    background: #edffeb;
+    position: relative;
+}
+
+.woocommerce_order_items .bundle-items .dashicons.dashicons-archive {
+    position: absolute;
+    top: 20%;
+    right: 85px;
+    font-size: 80px;
+    transform: translateY(-50%) rotate(-15deg);
+    color: #bde5b9;
+}
+
+@media only screen and (max-width: 769px) {
+    .woocommerce_order_items .bundle-items .dashicons.dashicons-archive {
+        display: none;
+    } 
+}
+
+.woocommerce_order_items .bundle-items ul {
+    list-style-type: none !important; 
+    padding: 0 5px;
+}
+
+.woocommerce_order_items .bundle-items ul li {
+    font-weight: normal;
+}
+
+.woocommerce_order_items .bundle-items p strong,
+.woocommerce_order_items .bundle-items ul li span  {
+    color: #888888;
+}
+
+.woocommerce_order_items .bundle-items ul li .woocommerce-Price-amount.amount bdi,
+.woocommerce_order_items .bundle-items ul li .woocommerce-Price-currencySymbol {
+    color: #3c434a;
+}
+
+/* Is Bundle column */
+
+table.wp-list-table .column-is_bundle { 
+    width: 1.5%; 
+}
+
+.column-is_bundle .dashicons-archive {
+    font-size: 20px;
+    color: #9cb576;
+}
+
+.column-is_bundle .dashicons {
+    margin: 0 auto;
+}
+
+/* Helpers */
+
+.smarty-text-danger  {
+    color: #c51244;
+}

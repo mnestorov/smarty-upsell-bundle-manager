@@ -1,7 +1,7 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: SM - Custom Upsell Products Design for WooCommerce\n"
+"Project-Id-Version: SM - Upsell Bundle Manager for WooCommerce\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-18 19:07+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
@@ -14,13 +14,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Loco https://localise.biz/\n"
 "X-Loco-Version: 2.6.6; wp-6.4.2\n"
-"X-Domain: smarty-custom-upsell-products-design"
+"X-Domain: smarty-upsell-bundle-manager"
 
 #: templates/woocommerce/single-product/add-to-cart/variation.php:17
 msgid "Amount: "
 msgstr ""
 
-#: smarty-custom-upsell-products-design.php:100
+#: smarty-upsell-bundle-manager.php:100
 msgid "Custom up-sell design"
 msgstr ""
 
@@ -30,11 +30,11 @@ msgid ""
 "WooCommerce."
 msgstr ""
 
-#: smarty-custom-upsell-products-design.php:270
+#: smarty-upsell-bundle-manager.php:270
 msgid "Enter the label for example: `Best Seller`"
 msgstr ""
 
-#: smarty-custom-upsell-products-design.php:279
+#: smarty-upsell-bundle-manager.php:279
 msgid "Enter the label for example: `Best Value`"
 msgstr ""
 
@@ -47,14 +47,14 @@ msgid "https://smartystudio.net"
 msgstr ""
 
 #. URI of the plugin
-msgid "https://smartystudio.net/smarty-custom-upsell-products-design"
+msgid "https://smartystudio.net/smarty-upsell-bundle-manager"
 msgstr ""
 
-#: smarty-custom-upsell-products-design.php:269
+#: smarty-upsell-bundle-manager.php:269
 msgid "Label 1"
 msgstr ""
 
-#: smarty-custom-upsell-products-design.php:278
+#: smarty-upsell-bundle-manager.php:278
 msgid "Label 2"
 msgstr ""
 
@@ -66,6 +66,6 @@ msgstr ""
 msgid "Smarty Studio | Martin Nestorov"
 msgstr ""
 
-#: smarty-custom-upsell-products-design.php:104
+#: smarty-upsell-bundle-manager.php:104
 msgid "Turn the custom up-sell design on or off for attributes."
 msgstr ""

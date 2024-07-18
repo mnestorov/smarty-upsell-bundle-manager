@@ -1,15 +1,15 @@
 <p align="center"><a href="https://smartystudio.net" target="_blank"><img src="https://smartystudio.net/wp-content/uploads/2023/06/smarty-green-logo-small.png" width="100" alt="SmartyStudio Logo"></a></p>
 
-# Smarty Studio - Custom Upsell Product Design for WooCommerce
+# Smarty Studio - Upsell Bundle Manager for WooCommerce
 
 [![Licence](https://img.shields.io/badge/LICENSE-GPL2.0+-blue)](./LICENSE)
 
 - Developed by: [Smarty Studio](https://smartystudio.net) | [Martin Nestorov](https://github.com/mnestorov)
-- Plugin URI: https://smartystudio.net/smarty-custom-upsell-products-design
+- Plugin URI: https://smartystudio.net/smarty-upsell-bundle-manager
 
 ## Overview
 
-**_Designed to change the product variation design for single products in WooCommerce_**
+**_Designed to change the product variation design and add additional (bundle) products to single products in WooCommerce_**
 
 This plugin enhances the user experience by offering a customized display of product variations, particularly focusing on upsell opportunities.
 
@@ -25,7 +25,7 @@ This plugin enhances the user experience by offering a customized display of pro
 
 ## Installation
 
-1. Upload the plugin files to the `/wp-content/plugins/smarty-custom-upsell-products-design`` directory, or install the plugin through the WordPress plugins screen directly.
+1. Upload the plugin files to the `/wp-content/plugins/smarty-upsell-bundle-manager` directory, or install the plugin through the WordPress plugins screen directly.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
 3. Go to the Products->Attributes, create new attribute, click on Edit and you will see the "Custom Upsell" design option on the left side.
 
@@ -41,8 +41,8 @@ For more specific configurations or to leverage advanced features, refer to the 
 
 ## Requirements
 
-- WordPress 3.0.0 or higher.
-- WooCommerce 5.1.0 or higher.
+- WordPress 3.6.0 or higher.
+- WooCommerce 6.0.0 or higher.
 
 ## Translation
 
