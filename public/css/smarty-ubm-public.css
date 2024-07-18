@@ -1,3 +1,262 @@
 /**
  * All of the CSS for plugin public functionality should be included in this file.
  */
+
+/* Single Product */
+
+.product-single .product__actions .product__actions__inner {
+    border: none;
+}
+
+.product-single .product__actions .quantity input,
+.woocommerce-variation-add-to-cart .variations_button .woocommerce-variation-add-to-cart-enabled .quantity,
+.checkmark {
+    display: none;
+}
+
+.main_title_wrap {
+    position: relative;
+    height: 115px;
+    padding-left: 15px;
+    margin: 30px 0;
+    box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+    -webkit-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+    -moz-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+    transition: all 0.3s ease-in;
+    border-radius: 5px;
+    border: 2px solid #ffffff00;
+}
+
+.main_title_wrap .var_txt {
+    position: absolute;
+    top: 24px;
+    width: 100%;
+}
+
+.price {
+    font-weight: bold;
+    visibility: visible !important; /* Ensure prices are visible */
+    word-spacing: normal !important;
+}
+
+.old_price {
+    text-decoration: line-through;
+    font-weight: bold;
+}
+
+.main_title_wrap input {
+    position: absolute;
+    top: 27px;
+}
+
+.upsell-container .variable_content {
+    margin-top: 40px;
+}
+
+.upsell-container .variable_title {
+    margin-left: 24px !important;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.upsell-container .variable_desc {
+    padding-top: 7px;
+    display: block;
+}
+
+.upsell-container .variable_img {
+    width: 16%;
+    float: right;
+    margin-top: 18px;
+    margin-right: 10px;
+    border-radius: 5px;
+}
+
+.variations_form .variations {
+    padding-top: 0;
+}
+
+.product-single .product__actions .single_variation_wrap .woocommerce-variation {
+    height: 40px;
+    padding: 12px 50px 20px 160px;
+}
+
+.label_1 {
+    font-weight: 600;
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-radius: 0 0 0 75px;
+    padding: 0 18px;
+}
+
+.label_2 {
+    font-weight: 600;
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-radius: 0 0 0 75px;
+    padding: 0 18px;
+}
+
+.free_delivery {
+    font-weight: 600;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 0 0 75px 0;
+    padding: 0 18px;
+}
+
+.savings-text {
+    font-weight: normal;
+}
+
+@media (max-width: 480px) { /* Adjusts for devices with width less than 768px */
+    .savings-text {
+        display: block; /* Forces the text onto a new line */
+        margin-top: -5px; /* Adds some space above the text */
+    }
+}
+
+ /* Additional Products*/
+
+.additional-products {
+    margin-bottom: 20px;
+    padding: 20px 20px 0 20px;
+    border: 2px dashed rgba(112,153,0, 0.7);
+    border-radius: 5px;
+    background: rgba(112,153,0, 0.075);
+}
+
+.additional-products p {
+    text-align: center;
+    line-height: normal;
+    font-weight: normal;
+}
+
+.additional-products label {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 30px;
+    background: #ffffff;
+    border: 2px solid #ffffff00;
+    border-radius: 5px;
+    box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+    -webkit-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+    -moz-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
+}
+
+.additional-products label.active, 
+.additional-products label:hover {
+    background: #ffffff;
+    border: 2px solid rgb(112,153,0);
+    transition: all 0.3s ease-in;
+}
+
+.additional-products input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    border-radius: 3px;
+    background-color: rgba(112,153,0, 0.075);
+    border: 1px solid rgb(112,153,0);
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.additional-products input[type="checkbox"]::after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    background-color: #709900;
+    border-radius: 2px;
+    display: none;
+}
+
+.additional-products input[type="checkbox"]:checked::after {
+    display: block;
+}
+
+.additional-product-image {
+    width: 18%;
+    margin-right: 10px;
+    border-radius: 5px;
+}
+
+.additional-product-title {
+    margin-right: auto;
+}
+
+.additional-product-regular-price > .woocommerce-Price-amount.amount bdi {
+    text-decoration: line-through;
+}
+
+.additional-product-sale-price > .woocommerce-Price-amount.amount bdi {
+    font-weight: bold;
+}
+
+/* Ribbon styles */
+.additional-products-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.additional-products-title p {
+    margin: 0;
+    padding-right: 10px; /* Adjust spacing as needed */
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.ribbon {
+    background: #FFD966;
+    color: #333333;
+    padding: 5px 10px;
+    font-size: 14px;
+    font-weight: bold;
+    position: relative;
+    top: 0;
+    height: 24px; /* Adjust height as needed */
+    line-height: 25px; /* Adjust line-height as needed */
+}
+
+.ribbon:before, .ribbon:after {
+    content: "";
+    position: absolute;
+    display: block;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-color: transparent;
+}
+
+.ribbon:before {
+    left: -10px;
+    border-width: 12.5px 10px;
+    border-right-color: #FFD966;
+}
+
+.ribbon:after {
+    right: -10px;
+    border-width: 12.5px 10px;
+    border-left-color: transparent;
+    border-top-color: #FFD966;
+    border-bottom-color: #FFD966;
+}
+
+.ribbon span {
+    position: relative;
+    top: -5px;
+}

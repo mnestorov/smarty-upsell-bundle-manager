@@ -84,6 +84,20 @@ class Smarty_Ubm_Public {
 		 */
 
 		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/smarty-ubm-public.js', array('jquery'), $this->version, true);
+        wp_localize_script('smarty-ubm-scripts', 'smartyUbmVars', array(
+            'ubmAmountText'        => esc_js(__('Amount: ', 'smarty-upsell-bundle-manager'));
+            'ubmCurrencySymbol'    => html_entity_decode(get_woocommerce_currency_symbol()),
+            'ubmCurrencyPosition'  => get_option('smarty_ubm_currency_symbol_position', 'left'),
+            'ubmCurrencySpacing'   => (get_option('smarty_ubm_currency_symbol_spacing', 'no_space') === 'space') ? ' ' : '',
+            'ubmDecimalSeparator'  => wc_get_price_decimal_separator(),
+            'ubmThousandSeparator' => wc_get_price_thousand_separator(),
+            'ubmDecimals'          => wc_get_price_decimals(),
+            'ubmYouSaveText'       => esc_js(__('you save', 'smarty-upsell-bundle-manager')),
+            'ubmSavingsTextSize'   => get_option('smarty_ubm_savings_text_size', '14') . 'px',
+            'ubmSavingsTextColor'  => get_option('smarty_ubm_savings_text_color', '#000000'),
+            'ubmDisplaySavings'    => get_option('smarty_ubm_display_savings_text', '0') === '1',
+            'ubmAjaxUrl'           => admin_url('admin-ajax.php')
+        ));
 	}
 
 	/**
@@ -435,5 +449,115 @@ class Smarty_Ubm_Public {
         $hidden_meta_keys = array_merge($hidden_meta_keys, $wpdb->get_col("SELECT meta_key FROM {$wpdb->prefix}woocommerce_order_itemmeta WHERE meta_key LIKE '_hidden_additional_product_sku_%'"));
         
         return $hidden_meta_keys;
+    }
+
+    /**
+	 * Outputs custom CSS to the head of single product pages.
+	 *
+	 * This function is hooked into the 'wp_head' action hook, so it runs
+	 * whenever the head section of the site is generated. It checks if the
+	 * current page is a single product page, and if so, it outputs a block
+	 * of CSS styles to the head of the page.
+	 *
+	 * You can modify the CSS styles within the function to suit your needs.
+     * 
+     * @since    1.0.0
+	 */
+	public function ubm_public_custom_css() {
+        $upsell_styling_enabled = get_option('smarty_enable_upsell_styling', '0') === '1';
+
+        $active_bg_color = get_option('smarty_active_bg_color', 'rgba(210, 184, 133, 0.3)');
+        $active_border_color = get_option('smarty_active_border_color', '#D2B885');
+        $price_color = get_option('smarty_price_color', '#99B998');
+        $old_price_color = get_option('smarty_old_price_color', '#DD5444');
+        $free_delivery_bg_color = get_option('smarty_free_delivery_bg_color', '#709900');
+        $free_delivery_color = get_option('smarty_free_delivery_color', '#FFFFFF');
+        $label_1_bg_color = get_option('smarty_label_1_bg_color', '#FFC045');
+        $label_1_color = get_option('smarty_label_1_color', '#FFFFFF');
+        $label_2_bg_color = get_option('smarty_label_2_bg_color', '#3F4BA4');
+        $label_2_color = get_option('smarty_label_2_color', '#FFFFFF');
+        $price_font_size = get_option('smarty_price_font_size', '14');
+        $old_price_font_size = get_option('smarty_old_price_font_size', '14');
+        $variable_desc_font_size = get_option('smarty_variable_desc_font_size', '14');
+        $free_delivery_font_size = get_option('smarty_free_delivery_font_size', '14');
+        $label_1_font_size = get_option('smarty_label_1_font_size', '14');
+        $label_2_font_size = get_option('smarty_label_2_font_size', '14');
+        $savings_text_size = get_option('smarty_savings_text_size', '14') . 'px';
+        $savings_text_color = get_option('smarty_savings_text_color', '#000000');
+        $image_border_color = get_option('smarty_image_border_color', '#000000');
+        $custom_css = get_option('smarty_custom_css', '');
+
+        if (is_product()) { ?>
+            <style>
+                <?php if ($upsell_styling_enabled) { ?>
+                    .main_title_wrap .var_txt {
+                        font-size: <?php echo esc_attr($font_size) . 'px'; ?>;
+                    }
+
+                    .main_title_wrap.active,
+                    .main_title_wrap:hover {
+                        background: <?php echo esc_attr($active_bg_color); ?>;
+                        border: 2px solid <?php echo esc_attr($active_border_color); ?>;
+                    }
+            
+                    .price {
+                        color: <?php echo esc_attr($price_color); ?>;
+                        font-size: <?php echo esc_attr($price_font_size) . 'px'; ?>;
+                    }
+                    
+                    .old_price {
+                        color: <?php echo esc_attr($old_price_color); ?>;
+                        font-size: <?php echo esc_attr($old_price_font_size) . 'px'; ?>;
+                    }
+                    
+                    .upsell-container .variable_desc {
+                        font-size: <?php echo esc_attr($variable_desc_font_size) . 'px'; ?>;
+                    }
+                    
+                    .upsell-container .variable_img {
+                        border: 1px solid <?php echo esc_attr($image_border_color); ?>;
+                    }
+            
+                    .label_1 {
+                        font-size: <?php echo esc_attr($label_1_font_size) . 'px'; ?>;
+                        color: <?php echo esc_attr($label_1_color); ?>;
+                        background: <?php echo esc_attr($label_1_bg_color); ?>;
+                    }
+
+                    .label_2 {
+                        font-size: <?php echo esc_attr($label_2_font_size) . 'px'; ?>;
+                        color: <?php echo esc_attr($label_2_color); ?>;
+                        background: <?php echo esc_attr($label_2_bg_color); ?>;
+                    }
+                    
+                    .free_delivery {
+                        font-size: <?php echo esc_attr($free_delivery_font_size) . 'px'; ?>;
+                        color: <?php echo esc_attr($free_delivery_color); ?>;
+                        background: <?php echo esc_attr($free_delivery_bg_color); ?>;
+                    }
+                <?php } ?>
+
+                .savings-text {
+                    font-size: <?php echo esc_attr($savings_text_size); ?>;
+                    color: <?php echo esc_attr($savings_text_color); ?>;
+                }
+
+                .additional-product-image {
+                    border: 1px solid <?php echo esc_attr($image_border_color); ?>;
+                }
+
+                .additional-product-regular-price > .woocommerce-Price-amount.amount bdi {
+                    font-size: <?php echo esc_attr($old_price_font_size) . 'px'; ?>;
+                    color: <?php echo esc_attr($old_price_color); ?>;
+                }
+
+                .additional-product-sale-price > .woocommerce-Price-amount.amount bdi {
+                    font-size: <?php echo esc_attr($price_font_size) . 'px'; ?>;
+                    color: <?php echo esc_attr($price_color); ?>;
+               }
+            </style>
+
+            <?php echo $custom_css; // Output the custom CSS
+        }
     }
 }

@@ -202,6 +202,7 @@ class Smarty_Ubm_Locator {
 		$this->loader->add_action('woocommerce_before_calculate_totals', $plugin_public, 'ubm_additional_product_recalculate_price', 10, 1);
 		$this->loader->add_action('woocommerce_add_order_item_meta', $plugin_public, 'ubm_add_order_item_meta', 10, 3);
 		$this->loader->add_filter('woocommerce_hidden_order_itemmeta', $plugin_public, 'ubm_hide_additional_product_skus');
+		$this->loader->add_action('wp_head', $plugin_public, 'ubm_public_custom_css');
 	}
 
 	/**
