@@ -1513,7 +1513,12 @@ if (!function_exists('smarty_handle_additional_products_cart')) {
             foreach ($_POST['additional_products'] as $product_id) {
                 $product_id = intval($product_id);
                 if ($product_id > 0 && wc_get_product($product_id)) {
-                    WC()->cart->add_to_cart($product_id);
+                    $main_product_price = WC()->cart->get_cart_item_subtotal($product_id);
+                    
+                    // Only add additional products if the main product price is greater than 0.00
+                    if ($main_product_price > 0) {
+                        WC()->cart->add_to_cart($product_id);
+                    }
                 }
             }
         }
@@ -1524,11 +1529,18 @@ if (!function_exists('smarty_handle_additional_products_cart')) {
 if (!function_exists('smarty_add_cart_item_data')) {
     function smarty_add_cart_item_data($cart_item_data, $product_id, $variation_id) {
         if (isset($_POST['additional_products']) && is_array($_POST['additional_products'])) {
-            $cart_item_data['additional_products'] = array_map('intval', $_POST['additional_products']);
+            // Check the price of the main product
+            $main_product_price = WC()->cart->get_cart_item_subtotal($product_id);
+            
+            // Only add additional products if the main product price is greater than 0.00
+            if ($main_product_price > 0) {
+                $cart_item_data['additional_products'] = array_map('intval', $_POST['additional_products']);
+            }
         }
         return $cart_item_data;
     }
 }
+
     
 if (!function_exists('smarty_get_cart_item_from_session')) {
     function smarty_get_cart_item_from_session($cart_item, $values) {
