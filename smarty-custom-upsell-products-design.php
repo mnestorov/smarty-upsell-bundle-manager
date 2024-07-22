@@ -1109,9 +1109,10 @@ if (!function_exists('smarty_public_custom_css')) {
                     position: relative;
                     top: -5px;
                 }
-            </style>
+            
+            <?php echo $custom_css; // Output the custom CSS ?>
 
-            <?php echo $custom_css; // Output the custom CSS
+            </style><?php
         }
     }
     add_action('wp_head', 'smarty_public_custom_css');    
