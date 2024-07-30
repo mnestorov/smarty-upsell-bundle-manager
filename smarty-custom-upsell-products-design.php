@@ -1682,7 +1682,7 @@ if (!function_exists('smarty_display_additional_products_order_meta')) {
             if (is_page('checkout') || is_admin()) {
                 echo '<span class="dashicons dashicons-archive"></span>';
             } 
-            echo '<p><strong>' . __('In a bundle with', 'smarty-custom-upsell-products-design') . ':</strong></p>';
+            echo '<p style="font-size: 13 px;"><strong>' . __('In a bundle with', 'smarty-custom-upsell-products-design') . ':</strong></p>';
             echo '<ul style="list-style-type: none !important; padding: 0 5px;">';
             foreach ($additional_products as $additional_product_id) {
                 $product = wc_get_product($additional_product_id);
