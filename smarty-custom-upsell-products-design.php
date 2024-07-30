@@ -1118,6 +1118,19 @@ if (!function_exists('smarty_public_custom_css')) {
     add_action('wp_head', 'smarty_public_custom_css');    
 }
 
+if (!function_exists('smarty_custom_thankyou_page_css')) {
+	function smarty_custom_thankyou_page_css() {
+		if (is_order_received_page()) {
+			echo '<style>
+				.woocommerce-order-received .bundle-items > .dashicons.dashicons-archive {
+					display: none;
+				}
+			</style>';
+		}
+	}
+	add_action('wp_head', 'smarty_custom_thankyou_page_css');
+}
+
 if (!function_exists('smarty_admin_custom_js')) {
 	/**
 	 * This function adds custom JavaScript to the WooCommerce product 
