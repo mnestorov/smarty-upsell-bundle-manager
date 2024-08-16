@@ -1,12 +1,12 @@
 <?php
 /**
  * Plugin Name: SM - Custom Upsell Products Design for WooCommerce
- * Plugin URI: https://smartystudio.net/smarty-custom-upsell-products-design
+ * Plugin URI: https://smartystudio.net/smarty-upsell-bundle-manager
  * Description: Designed to change the product variation design for single products in WooCommerce.
  * Version: 1.0.0
  * Author: Smarty Studio | Martin Nestorov
  * Author URI: https://smartystudio.net
- * Text Domain: smarty-custom-upsell-products-design
+ * Text Domain: smarty-upsell-bundle-manager
  * Domain Path: /languages/
  * WC requires at least: 3.5.0
  * WC tested up to: 9.0.2
@@ -39,8 +39,8 @@ if (!function_exists('smarty_register_settings_page')) {
     function smarty_register_settings_page() {
         add_submenu_page(
             'woocommerce',
-            __('Custom Upsell Products Design | Settings', 'smarty-custom-upsell-products-design'),
-            __('Upsell Products Design', 'smarty-custom-upsell-products-design'),
+            __('Custom Upsell Products Design | Settings', 'smarty-upsell-bundle-manager'),
+            __('Upsell Products Design', 'smarty-upsell-bundle-manager'),
             'manage_options',
             'smarty-custom-upsell-settings',
             'smarty_settings_page_content',
@@ -159,11 +159,11 @@ if (!function_exists('smarty_checkbox_field_cb')) {
         echo "</label>";
         // Display the description only for the debug mode checkbox
         if ($args['id'] == 'smarty_debug_mode') {
-            echo '<p class="description">' . __('Copies specific template files from a plugin directory to a child theme directory in WordPress. <br><em><b>Important:</b> <span class="smarty-text-danger">Turn this to Off in production.</span></em>', 'smarty-custom-upsell-products-design') . '</p>';
+            echo '<p class="description">' . __('Copies specific template files from a plugin directory to a child theme directory in WordPress. <br><em><b>Important:</b> <span class="smarty-text-danger">Turn this to Off in production.</span></em>', 'smarty-upsell-bundle-manager') . '</p>';
         }
         // Display the description only for the enable upsell styling checkbox
         if ($args['id'] == 'smarty_enable_upsell_styling') {
-            echo '<p class="description">' . __('Enable/Disable custom styling for the variations of the variable products. <br><em><b>Important:</b> <span class="smarty-text-danger">Turn this to Off if you have any problems with the styling of the variable products.</span></em>', 'smarty-custom-upsell-products-design') . '</p>';
+            echo '<p class="description">' . __('Enable/Disable custom styling for the variations of the variable products. <br><em><b>Important:</b> <span class="smarty-text-danger">Turn this to Off if you have any problems with the styling of the variable products.</span></em>', 'smarty-upsell-bundle-manager') . '</p>';
         }
     }
 }
@@ -264,7 +264,7 @@ if (!function_exists('smarty_checkbox_field_cb')) {
         echo "</label>";
         // Display the description only for the debug mode checkbox
         if ($args['id'] == 'smarty_debug_mode') {
-            echo '<p class="description">' . __('Copies specific template files from a plugin directory to a child theme directory in WordPress. <br><em><b>Important:</b> <span class="smarty-text-danger">Turn this to Off in production.</span></em>', 'smarty-custom-upsell-products-design') . '</p>';
+            echo '<p class="description">' . __('Copies specific template files from a plugin directory to a child theme directory in WordPress. <br><em><b>Important:</b> <span class="smarty-text-danger">Turn this to Off in production.</span></em>', 'smarty-upsell-bundle-manager') . '</p>';
         }
     }
 }
@@ -273,7 +273,7 @@ if (!function_exists('smarty_settings_page_content')) {
     function smarty_settings_page_content() {
         ?>
        <div class="wrap">
-            <h1><?php _e('Custom Upsell Products Design | Settings', 'smarty-custom-upsell-products-design'); ?></h1>
+            <h1><?php _e('Custom Upsell Products Design | Settings', 'smarty-upsell-bundle-manager'); ?></h1>
             <form method="post" action="options.php">
                 <?php
                 settings_fields('smarty_settings_group');
@@ -430,11 +430,11 @@ if (!function_exists('smarty_after_edit_attribute_fields')) {
         // Escaping for output
         echo '<tr class="form-field">';
         echo '    <th valign="top" scope="row">';
-        echo '        <label for="up_sell_design">' . esc_html__('Custom up-sell design', 'smarty-custom-upsell-products-design') . '</label>';
+        echo '        <label for="up_sell_design">' . esc_html__('Custom up-sell design', 'smarty-upsell-bundle-manager') . '</label>';
         echo '    </th>';
         echo '    <td>';
         echo '        <input name="up_sell_design" id="up_sell_design" type="checkbox" value="1" ' . esc_attr($checked) . ' />';
-        echo '		  <p class="description">' . esc_html__('Turn the custom up-sell design on or off for attributes.', 'smarty-custom-upsell-products-design') . '</p>';
+        echo '		  <p class="description">' . esc_html__('Turn the custom up-sell design on or off for attributes.', 'smarty-upsell-bundle-manager') . '</p>';
         echo '    </td>';
         echo '</tr>';
     }
@@ -617,8 +617,8 @@ if (!function_exists('smarty_add_custom_fields_to_variations')) {
         // Custom field for Label 1
         woocommerce_wp_text_input(array(
             'id' => 'smarty_label_1[' . $variation->ID . ']', 
-            'label' => __('Label 1', 'smarty-custom-upsell-products-design'), 
-            'description' => __('Enter the label for example: `Best Seller`', 'smarty-custom-upsell-products-design'),
+            'label' => __('Label 1', 'smarty-upsell-bundle-manager'), 
+            'description' => __('Enter the label for example: `Best Seller`', 'smarty-upsell-bundle-manager'),
             'desc_tip' => true,
             'value' => get_post_meta($variation->ID, '_smarty_label_1', true),
             'wrapper_class' => 'form-row form-row-first'
@@ -627,8 +627,8 @@ if (!function_exists('smarty_add_custom_fields_to_variations')) {
         // Custom field for Label 2
         woocommerce_wp_text_input(array(
             'id' => 'smarty_label_2[' . $variation->ID . ']', 
-            'label' => __('Label 2', 'smarty-custom-upsell-products-design'), 
-            'description' => __('Enter the label for example: `Best Value`', 'smarty-custom-upsell-products-design'),
+            'label' => __('Label 2', 'smarty-upsell-bundle-manager'), 
+            'description' => __('Enter the label for example: `Best Value`', 'smarty-upsell-bundle-manager'),
             'desc_tip' => true,
             'value' => get_post_meta($variation->ID, '_smarty_label_2', true),
             'wrapper_class' => 'form-row form-row-last'
@@ -1135,7 +1135,7 @@ if (!function_exists('smarty_public_custom_js')) {
         $display_savings = get_option('smarty_display_savings', '0') === '1'; // get the setting and check if it is enabled
         $savings_text_size = get_option('smarty_savings_text_size', '14') . 'px';
         $savings_text_color = get_option('smarty_savings_text_color', '#000000');
-        $youSaveText = esc_js(__('you save', 'smarty-custom-upsell-products-design')); // translatable text for 'you save'
+        $youSaveText = esc_js(__('you save', 'smarty-upsell-bundle-manager')); // translatable text for 'you save'
 
         ?>
         <script type="text/javascript">
@@ -1291,7 +1291,7 @@ if (!function_exists('smarty_public_custom_js')) {
 
 if (!function_exists('smarty_update_total_price')) {
     function smarty_update_total_price() {
-        $amount_text = esc_js(__('Amount: ', 'smarty-custom-upsell-products-design'));
+        $amount_text = esc_js(__('Amount: ', 'smarty-upsell-bundle-manager'));
         $currency_symbol = get_woocommerce_currency_symbol();
         $currency_position = get_option('smarty_currency_symbol_position', 'left');
         $currency_spacing = get_option('smarty_currency_symbol_spacing', 'no_space');
@@ -1410,10 +1410,10 @@ if (!function_exists('smarty_add_additional_products_checkbox')) {
 
                 echo '<div class="additional-products">';
                 echo '<div class="additional-products-title">';
-                echo '<p>' . __('One or two more', 'smarty-custom-upsell-products-design') . '</p>';
-                echo '<div class="ribbon"><span>' . sprintf(__('SAVE %s', 'smarty-custom-upsell-products-design'), $formatted_total_savings) . '</span></div>';
+                echo '<p>' . __('One or two more', 'smarty-upsell-bundle-manager') . '</p>';
+                echo '<div class="ribbon"><span>' . sprintf(__('SAVE %s', 'smarty-upsell-bundle-manager'), $formatted_total_savings) . '</span></div>';
                 echo '</div>';
-                echo '<p>' . sprintf(__('Get up to %s off when you bundle one or more products.', 'smarty-custom-upsell-products-design'), $formatted_total_savings) . '</p>';
+                echo '<p>' . sprintf(__('Get up to %s off when you bundle one or more products.', 'smarty-upsell-bundle-manager'), $formatted_total_savings) . '</p>';
                 foreach ($additional_products as $additional_product) {
                     $product_obj = wc_get_product($additional_product->get_id());
                     $product_image = $product_obj->get_image('thumbnail');
@@ -1538,7 +1538,7 @@ if (!function_exists('smarty_display_additional_products_in_cart')) {
                  $product = wc_get_product($additional_product_id);
                 if ($product) {
                     $item_data[] = array(
-                        'key' => __('Additional Product', 'smarty-custom-upsell-products-design'),
+                        'key' => __('Additional Product', 'smarty-upsell-bundle-manager'),
                         'value' => $product->get_name() . ' (+ ' . wc_price($product->get_price()) . ')',
                     );
                 }
@@ -1560,7 +1560,7 @@ if (!function_exists('smarty_display_additional_products_order_meta')) {
     function smarty_display_additional_products_order_meta($item_id, $item, $order) {
         $additional_products = wc_get_order_item_meta($item_id, '_additional_products', true);
         if ($additional_products && is_array($additional_products)) {
-            echo '<p><strong>' . __('Additional Products', 'smarty-custom-upsell-products-design') . ':</strong></p>';
+            echo '<p><strong>' . __('Additional Products', 'smarty-upsell-bundle-manager') . ':</strong></p>';
             echo '<ul>';
             foreach ($additional_products as $additional_product_id) {
                 $product = wc_get_product($additional_product_id);
