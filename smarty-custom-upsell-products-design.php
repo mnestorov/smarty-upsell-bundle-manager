@@ -806,7 +806,7 @@ if (!function_exists('smarty_public_custom_css')) {
                         position: absolute;
                         top: 24px;
                         width: 100%;
-                        font-size: <?php echo esc_attr($font_size) . 'px'; ?>;
+                        font-size: 16px; /* TODO: Make it dynamic */
                     }
 
                     .main_title_wrap.active,
