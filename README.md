@@ -5,7 +5,7 @@
 [![Licence](https://img.shields.io/badge/LICENSE-GPL2.0+-blue)](./LICENSE)
 
 - Developed by: [Smarty Studio](https://smartystudio.net) | [Martin Nestorov](https://github.com/mnestorov)
-- Plugin URI: https://smartystudio.net/smarty-custom-upsell-products-design
+- Plugin URI: https://github.dev/smartystudio/smarty-upsell-bundle-manager
 
 ## Overview
 
