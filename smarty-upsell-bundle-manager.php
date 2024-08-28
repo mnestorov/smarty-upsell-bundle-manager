@@ -13,7 +13,7 @@
  * 
  * @wordpress-plugin
  * Plugin Name:             SM - Upsell Bundle Manager for WooCommerce
- * Plugin URI:              https://smartystudio.net/smarty-upsell-bundle-manager
+ * Plugin URI:              https://github.dev/smartystudio/smarty-upsell-bundle-manager
  * Description:             Designed to change the product variation design and add additional (bundle) products for single products in WooCommerce.
  * Version:                 1.0.0
  * Author:                  Smarty Studio | Martin Nestorov
