@@ -477,21 +477,24 @@ if (!function_exists('smarty_variable_price_range')) {
     /**
      * Modifies the display format of WooCommerce variable product prices.
      * 
-     * @param string $wcv_price Current price HTML.
+     * @param string $wc_variable_price Current price HTML.
      * @param WC_Product $product WooCommerce product object.
      * @return string Modified price HTML.
      */
     function smarty_variable_price_range($wc_variable_price, $product) {
         $prefix = '';
-        $wc_variable_min_sale_price = null;
+
+        // Initialize variables
+        $wc_variable_min_price = $product->get_variation_price('min', true);
+        $wc_variable_max_price = $product->get_variation_price('max', true);
         $wc_variable_reg_min_price = $product->get_variation_regular_price('min', true);
-        $wc_variable__min_sale_price = $product->get_variation_sale_price('min', true);
-        $wc_variable__max_price = $product->get_variation_price('max', true);
-        $wc_variable__min_price = $product->get_variation_price('min', true);
-        $wc_variable__price = ($wc_variable_min_sale_price == $wc_variable_reg_min_price) 
+        $wc_variable_min_sale_price = $product->get_variation_sale_price('min', true);
+
+        $wc_variable_price = ($wc_variable_min_sale_price == $wc_variable_reg_min_price) 
             ? wc_price($wc_variable_reg_min_price) 
             : wc_price($wc_variable_min_sale_price);
 
+        // Return the price or the price range based on the condition
         return ($wc_variable_min_price == $wc_variable_max_price) ? $wc_variable_price : sprintf('%s%s', $prefix, $wc_variable_price);
     }
     add_filter('woocommerce_variable_sale_price_html', 'smarty_variable_price_range', 10, 2);
