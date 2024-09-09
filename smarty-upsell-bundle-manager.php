@@ -195,17 +195,15 @@ if (!function_exists('smarty_currency_section_cb')) {
     }
 }
 
-
 if (!function_exists('smarty_choose_additional_products_field_cb')) {
     function smarty_choose_additional_products_field_cb() {
-        $upsell_products = get_option('smarty_choose_additional_products', []);
-        // Ensure $additional_products is always an array
-        $additional_products = is_array($upsell_products) ? $upsell_products : [];
+        $saved_products = get_option('smarty_choose_additional_products', []);
+        $saved_products = is_array($saved_products) ? $saved_products : [];
         $products = wc_get_products(array('limit' => -1)); // Get all products
 
         echo '<select name="smarty_choose_additional_products[]" multiple="multiple" id="smarty_choose_additional_products" style="width: 100%;">';
         foreach ($products as $product) {
-            $selected = in_array($product->get_id(), $additional_products) ? 'selected' : '';
+            $selected = in_array($product->get_id(), $saved_products) ? 'selected' : '';
             echo '<option value="' . esc_attr($product->get_id()) . '" ' . esc_attr($selected) . '>' . esc_html($product->get_name()) . '</option>';
         }
         echo '</select>'; ?>
@@ -1360,7 +1358,7 @@ if (!function_exists('smarty_update_total_price')) {
 
 if (!function_exists('smarty_additional_products_data_fields')) {
     function smarty_additional_products_data_fields() {
-        global $woocommerce, $post;
+        global $post;
         ?>
         <div id='smarty_additional_products_data' class='panel woocommerce_options_panel'>
             <?php
@@ -1375,13 +1373,19 @@ if (!function_exists('smarty_additional_products_data_fields')) {
 
             // Additional field for choosing products (can use select2 or similar for better UI)
             $product_ids = get_post_meta($post->ID, '_smarty_additional_products', true);
-            $product_ids = !empty($product_ids) ? $product_ids : array();
+            $product_ids = !empty($product_ids) ? (array) $product_ids : [];
+
             echo '<p class="form-field"><label for="smarty_additional_products">' . __('Choose Additional Products', 'smarty-upsell-bundle-manager') . '</label>';
             echo '<select multiple="multiple" name="smarty_additional_products[]" id="smarty_additional_products" class="wc-product-search" style="width: 50%;" data-placeholder="' . esc_attr__('Search for a product…', 'woocommerce') . '" data-action="woocommerce_json_search_products_and_variations">';
-            $products = wc_get_products(array('include' => $product_ids));
-            foreach ($products as $product) {
-                echo '<option value="' . esc_attr($product->get_id()) . '" selected="selected">' . wp_kses_post($product->get_name()) . '</option>';
+            
+            // If no products, do not populate any options
+            if (!empty($product_ids)) {
+                $products = wc_get_products(array('include' => $product_ids));
+                foreach ($products as $product) {
+                    echo '<option value="' . esc_attr($product->get_id()) . '" selected="selected">' . esc_html($product->get_name()) . '</option>';
+                }
             }
+            
             echo '</select></p>';
             ?>
         </div>
@@ -1428,106 +1432,111 @@ if (!function_exists('smarty_add_additional_products_checkbox')) {
             $additional_products_ids = !empty($additional_products_ids) ? explode(',', $additional_products_ids) : [];
         }
 
-        // Fetch products using IDs
-        $additional_products = wc_get_products(array(
-            'include' => $additional_products_ids,
-            'status' => 'publish',
-            'limit' => -1,
-        ));
+        if (!empty($additional_products_ids)) {
+            // Fetch products using IDs
+            $additional_products = wc_get_products(array(
+                'include' => $additional_products_ids,
+                'status' => 'publish',
+                'limit' => -1,
+            ));
 
-        // Sort the additional products according to the order in $order_ids_array
-        usort($additional_products, function($a, $b) use ($order_ids_array) {
-            $pos_a = array_search($a->get_id(), $order_ids_array);
-            $pos_b = array_search($b->get_id(), $order_ids_array);
-            return $pos_a <=> $pos_b;
-        });
+            // Sort the additional products according to the order in $order_ids_array
+            usort($additional_products, function($a, $b) use ($order_ids_array) {
+                $pos_a = array_search($a->get_id(), $order_ids_array);
+                $pos_b = array_search($b->get_id(), $order_ids_array);
+                return $pos_a <=> $pos_b;
+            });
 
-        $total_savings = 0;
+            $total_savings = 0;
 
-        if ($additional_products) {
-            foreach ($additional_products as $additional_product) {
-                $product_obj = wc_get_product($additional_product->get_id());
-                $regular_price = $product_obj->get_regular_price();
-                $sale_price = $product_obj->get_sale_price();
+            if ($additional_products) {
+                foreach ($additional_products as $additional_product) {
+                    $product_obj = wc_get_product($additional_product->get_id());
+                    $regular_price = $product_obj->get_regular_price();
+                    $sale_price = $product_obj->get_sale_price();
 
-                // If the product is variable, get the price of the first variation
-                if ($product_obj->is_type('variable')) {
-                    $available_variations = $product_obj->get_available_variations();
-                    if (!empty($available_variations)) {
-                        $variation = reset($available_variations);
-                        $regular_price = $variation['display_regular_price'];
-                        $sale_price = $variation['display_price'];
+                    // If the product is variable, get the price of the first variation
+                    if ($product_obj->is_type('variable')) {
+                        $available_variations = $product_obj->get_available_variations();
+                        if (!empty($available_variations)) {
+                            $variation = reset($available_variations);
+                            $regular_price = $variation['display_regular_price'];
+                            $sale_price = $variation['display_price'];
+                        }
+                    }
+
+                    // Calculate total savings
+                    if ($regular_price && $sale_price) {
+                        $total_savings += ($regular_price - $sale_price);
                     }
                 }
 
-                // Calculate total savings
-                if ($regular_price && $sale_price) {
-                    $total_savings += ($regular_price - $sale_price);
-                }
-            }
+                // Get currency settings
+                $currency_symbol = html_entity_decode(get_woocommerce_currency_symbol());
+                $currency_position = get_option('smarty_currency_symbol_position', 'left');
+                $currency_spacing = get_option('smarty_currency_symbol_spacing', 'no_space');
+                $spacing = ($currency_spacing === 'space') ? ' ' : '';
 
-            // Get currency settings
-            $currency_symbol = html_entity_decode(get_woocommerce_currency_symbol());
-            $currency_position = get_option('smarty_currency_symbol_position', 'left');
-            $currency_spacing = get_option('smarty_currency_symbol_spacing', 'no_space');
-            $spacing = ($currency_spacing === 'space') ? ' ' : '';
-
-            // Format the total savings with currency settings
-            $formatted_total_savings = number_format($total_savings, 2, wc_get_price_decimal_separator(), wc_get_price_thousand_separator());
-            if ($currency_position === 'left') {
-                $formatted_total_savings = $currency_symbol . $spacing . $formatted_total_savings;
-            } else {
-                $formatted_total_savings = $formatted_total_savings . $spacing . $currency_symbol;
-            }
-
-            echo '<div class="additional-products">';
-            echo '<div class="additional-products-title">';
-            echo '<p>' . __('One or two more', 'smarty-upsell-bundle-manager') . '</p>';
-            echo '<div class="ribbon"><span>' . sprintf(__('SAVE %s', 'smarty-upsell-bundle-manager'), $formatted_total_savings) . '</span></div>';
-            echo '</div>';
-            echo '<p>' . sprintf(__('Get up to %s off when you bundle one or more products.', 'smarty-upsell-bundle-manager'), $formatted_total_savings) . '</p>';
-            
-            foreach ($additional_products as $additional_product) {
-                $product_obj = wc_get_product($additional_product->get_id());
-                $product_image = $product_obj->get_image('thumbnail');
-                $regular_price = $product_obj->get_regular_price();
-                $sale_price = $product_obj->get_sale_price();
-
-                // If the product is variable, get the price of the first variation
-                if ($product_obj->is_type('variable')) {
-                    $available_variations = $product_obj->get_available_variations();
-                    if (!empty($available_variations)) {
-                        $variation = reset($available_variations);
-                        $regular_price = $variation['display_regular_price'];
-                        $sale_price = $variation['display_price'];
-                    }
-                }
-
-                // Ensure regular_price and sale_price are set
-                $data_regular_price = !empty($regular_price) ? esc_attr($regular_price) : '0';
-                $data_sale_price = !empty($sale_price) ? esc_attr($sale_price) : '0';
-
-                $price_html = '';
-                if ($sale_price) {
-                    $price_html = '<span class="price">' . wc_price($sale_price) . '</span>';
-                    if ($regular_price > $sale_price) {
-                        $price_html = '<span class="price old_price">' . wc_price($regular_price) . '</span> <span class="price">' . wc_price($sale_price) . '</span>';
-                    }
+                // Format the total savings with currency settings
+                $formatted_total_savings = number_format($total_savings, 2, wc_get_price_decimal_separator(), wc_get_price_thousand_separator());
+                if ($currency_position === 'left') {
+                    $formatted_total_savings = $currency_symbol . $spacing . $formatted_total_savings;
                 } else {
-                    $price_html = '<span class="price">' . wc_price($regular_price) . '</span>';
+                    $formatted_total_savings = $formatted_total_savings . $spacing . $currency_symbol;
                 }
 
-                echo '<label>';
-                echo '<input type="checkbox" name="additional_products[]" value="' . esc_attr($additional_product->get_id()) . '" data-regular-price="' . $data_regular_price . '" data-sale-price="' . $data_sale_price . '">';
-                echo '<div class="additional-product-image">' . $product_image . '</div>';
-                echo '<div>';
-                echo '<div class="additional-product-title">' . esc_html($additional_product->get_name()) . '</div>';
-                echo '<div class="additional-product-price">' . $price_html . '</div>';
+                echo '<div class="additional-products">';
+                echo '<div class="additional-products-title">';
+                echo '<p>' . __('One or two more', 'smarty-upsell-bundle-manager') . '</p>';
+                echo '<div class="ribbon"><span>' . sprintf(__('SAVE %s', 'smarty-upsell-bundle-manager'), $formatted_total_savings) . '</span></div>';
                 echo '</div>';
-                echo '</label>';
-                }
-            echo '</div>';
-        }
+                echo '<p>' . sprintf(__('Get up to %s off when you bundle one or more products.', 'smarty-upsell-bundle-manager'), $formatted_total_savings) . '</p>';
+                
+                foreach ($additional_products as $additional_product) {
+                    $product_obj = wc_get_product($additional_product->get_id());
+                    $product_image = $product_obj->get_image('thumbnail');
+                    $regular_price = $product_obj->get_regular_price();
+                    $sale_price = $product_obj->get_sale_price();
+
+                    // If the product is variable, get the price of the first variation
+                    if ($product_obj->is_type('variable')) {
+                        $available_variations = $product_obj->get_available_variations();
+                        if (!empty($available_variations)) {
+                            $variation = reset($available_variations);
+                            $regular_price = $variation['display_regular_price'];
+                            $sale_price = $variation['display_price'];
+                        }
+                    }
+
+                    // Ensure regular_price and sale_price are set
+                    $data_regular_price = !empty($regular_price) ? esc_attr($regular_price) : '0';
+                    $data_sale_price = !empty($sale_price) ? esc_attr($sale_price) : '0';
+
+                    $price_html = '';
+                    if ($sale_price) {
+                        $price_html = '<span class="price">' . wc_price($sale_price) . '</span>';
+                        if ($regular_price > $sale_price) {
+                            $price_html = '<span class="price old_price">' . wc_price($regular_price) . '</span> <span class="price">' . wc_price($sale_price) . '</span>';
+                        }
+                    } else {
+                        $price_html = '<span class="price">' . wc_price($regular_price) . '</span>';
+                    }
+
+                    echo '<label>';
+                    echo '<input type="checkbox" name="additional_products[]" value="' . esc_attr($additional_product->get_id()) . '" data-regular-price="' . $data_regular_price . '" data-sale-price="' . $data_sale_price . '">';
+                    echo '<div class="additional-product-image">' . $product_image . '</div>';
+                    echo '<div>';
+                    echo '<div class="additional-product-title">' . esc_html($additional_product->get_name()) . '</div>';
+                    echo '<div class="additional-product-price">' . $price_html . '</div>';
+                    echo '</div>';
+                    echo '</label>';
+                    }
+                echo '</div>';
+            }
+        } else {
+            // If no additional products, do not display anything
+            error_log('No additional products selected or available for display.');
+        }    
     }
 }
 
@@ -1645,10 +1654,57 @@ if (!function_exists('smarty_display_additional_products_order_meta')) {
      }
 }
 
+if (!function_exists('smarty_choose_additional_products_for_product_cb')) {
+    function smarty_choose_additional_products_for_product_cb($post) {
+        $product_additional_products = get_post_meta($post->ID, '_smarty_additional_products', true);
+        $product_additional_products = is_array($product_additional_products) ? $product_additional_products : [];
+
+        $products = wc_get_products(array('limit' => -1)); // Fetch all products
+        
+        echo '<select name="smarty_choose_additional_products[]" multiple="multiple" id="smarty_choose_additional_products" style="width: 100%;">';
+        foreach ($products as $product) {
+            $selected = in_array($product->get_id(), $product_additional_products) ? 'selected' : '';
+            echo '<option value="' . esc_attr($product->get_id()) . '" ' . esc_attr($selected) . '>' . esc_html($product->get_name()) . '</option>';
+        }
+        echo '</select>';
+    ?>
+        <script>
+            jQuery(document).ready(function($) {
+                $('#smarty_choose_additional_products').select2({
+                    placeholder: "Select additional products",
+                    allowClear: true
+                });
+            });
+        </script>
+    <?php
+    }
+}
+
+if (!function_exists('smarty_save_additional_products_for_product')) {
+    function smarty_save_additional_products_for_product($post_id) {
+        if (isset($_POST['smarty_additional_products']) && !empty($_POST['smarty_additional_products'])) {
+            $additional_products = array_map('intval', $_POST['smarty_additional_products']);
+            update_post_meta($post_id, '_smarty_additional_products', $additional_products);
+            error_log('Products saved: ' . implode(', ', $additional_products));
+        } else {
+            delete_post_meta($post_id, '_smarty_additional_products');
+            error_log('No products selected. Meta field deleted.');
+            
+            // Clear WooCommerce product cache
+            wc_delete_product_transients($post_id);
+            
+            // Log the value to ensure it has been deleted
+            $meta_value = get_post_meta($post_id, '_smarty_additional_products', true);
+            error_log('Meta value after delete: ' . print_r($meta_value, true));
+        }
+    }
+}
+
 if (get_option('smarty_enable_additional_products', '1') === '1') {
     // Functions related to additional products
     add_action('woocommerce_product_data_panels', 'smarty_additional_products_data_fields');
     add_action('woocommerce_process_product_meta', 'smarty_save_custom_order_ids_field');
+    add_action('woocommerce_process_product_meta', 'smarty_save_additional_products_for_product');
     add_filter('woocommerce_product_data_tabs', 'smarty_add_additional_products_tab');
     add_action('woocommerce_before_single_variation', 'smarty_add_additional_products_checkbox', 5);
     add_action('wp_footer', 'smarty_update_total_price');
