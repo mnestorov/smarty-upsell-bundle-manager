@@ -924,24 +924,25 @@ if (!function_exists('smarty_public_custom_css')) {
 
                  /* Additional products*/
                 .additional-products {
-                    margin-bottom: 20px;
-                    padding: 20px 20px 0 20px;
-                    border: 2px dashed rgba(112,153,0, 0.7);
-                    border-radius: 5px;
-                    background: rgba(112,153,0, 0.075);
-                }
+					margin-bottom: 20px;
+    				padding: 10px 15px 0 15px;
+					border: 2px dashed rgba(0, 0, 0, 0.105);
+					border-radius: 5px;
+					background: rgba(249, 247, 246, 0.3);
+				}
 
                 .additional-products p {
                     text-align: center;
                     line-height: normal;
-                    font-weight: normal;
+                    font-weight: inherit;
+					margin: 5px 0 10px;
                 }
 
                 .additional-products label {
                     display: flex;
                     align-items: center;
-                    padding: 10px;
-                    margin-bottom: 30px;
+                    padding: 5px 10px;
+    				margin-bottom: 20px;
                     background: #ffffff;
                     border: 2px solid #ffffff00;
                     border-radius: 5px;
@@ -952,9 +953,9 @@ if (!function_exists('smarty_public_custom_css')) {
 
                 .additional-products label.active, 
                 .additional-products label:hover {
-                    background: #ffffff;
-                    border: 2px solid rgb(112,153,0);
-                    transition: all 0.3s ease-in;
+                    background: #efe5d0;
+					border: 2px solid #d2b885;
+					transition: all 0.3s ease-in;
                 }
 
                 .additional-products input[type="checkbox"] {
@@ -962,8 +963,8 @@ if (!function_exists('smarty_public_custom_css')) {
                     height: 20px;
                     margin-right: 10px;
                     border-radius: 3px;
-                    background-color: rgba(112,153,0, 0.075);
-                    border: 1px solid rgb(112,153,0);
+                    background-color: rgba(249, 247, 246, 0.9);
+                    border: 1px solid #d2b885;
                     cursor: pointer;
                     -webkit-appearance: none;
                     -moz-appearance: none;
@@ -978,7 +979,7 @@ if (!function_exists('smarty_public_custom_css')) {
                     content: "";
                     width: 10px;
                     height: 10px;
-                    background-color: #709900;
+                    background-color: #d2b885;
                     border-radius: 2px;
                     display: none;
                 }
@@ -988,8 +989,8 @@ if (!function_exists('smarty_public_custom_css')) {
                 }
 
                 .additional-product-image {
-                    width: 18%;
-                    margin-right: 10px;
+                    width: 15%;
+    				margin-right: 5px;
                     border: 1px solid <?php echo esc_attr($image_border_color); ?>;
                     border-radius: 5px;
                 }
@@ -1027,13 +1028,14 @@ if (!function_exists('smarty_public_custom_css')) {
                 }
 
                 .ribbon {
-                    background: #FFD966;
+                    background: #FFF3D1;
                     color: #333333;
-                    padding: 5px 10px;
-                    font-size: 14px;
-                    font-weight: bold;
-                    position: relative;
-                    top: 0;
+                    padding: 5px 5px;
+					font-size: 13px;
+					font-weight: bold;
+					position: relative;
+					top: 0;
+					left: -5px;
                     height: 24px; /* Adjust height as needed */
                     line-height: 25px; /* Adjust line-height as needed */
                 }
@@ -1053,21 +1055,27 @@ if (!function_exists('smarty_public_custom_css')) {
                 .ribbon:before {
                     left: -10px;
                     border-width: 12.5px 10px;
-                    border-right-color: #FFD966;
+                    border-right-color: #FFF3D1;
                 }
 
                 .ribbon:after {
                     right: -10px;
                     border-width: 12.5px 10px;
                     border-left-color: transparent;
-                    border-top-color: #FFD966;
-                    border-bottom-color: #FFD966;
+                    border-top-color: #FFF3D1;
+                    border-bottom-color:#FFF3D1;
                 }
 
                 .ribbon span {
                     position: relative;
                     top: -5px;
                 }
+				
+				@media only screen and (max-width: 768px) {
+				  	.ribbon {
+				   		display: none;
+					}
+				}
             </style><?php
         }
     }
