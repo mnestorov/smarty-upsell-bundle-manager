@@ -74,7 +74,7 @@ if ($up_sell_design) :
                                                 <?php } ?>
                                                 
                                                 <?php if (!is_null($free_delivery_amount) && $price > $free_delivery_amount) : ?>
-                                                    <span class="free_delivery"><?= __('Free delivery', 'smarty-custom-upsell-products-design'); ?></span>
+                                                    <span class="free_delivery"><?= __('Free delivery', 'smarty-upsell-bundle-manager'); ?></span>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
