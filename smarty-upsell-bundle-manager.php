@@ -848,6 +848,14 @@ if (!function_exists('smarty_public_custom_css')) {
                         position: absolute;
                         top: 27px;
                     }
+
+                    @media only screen and (max-width: 600px) {
+						.main_title_wrap .var_txt {
+							width: 85%;
+							font-size: 15px;
+							line-height: 1.3;
+						}
+					}
                     
                     .upsell-container .variable_content {
                         margin-top: 40px;
