@@ -39,8 +39,8 @@ if (!function_exists('smarty_register_settings_page')) {
     function smarty_register_settings_page() {
         add_submenu_page(
             'woocommerce',
-            __('Custom Upsell Products Design | Settings', 'smarty-upsell-bundle-manager'),
-            __('Upsell Products Design', 'smarty-upsell-bundle-manager'),
+            __('Upsell Bundle Manager | Settings', 'smarty-upsell-bundle-manager'),
+            __('Upsell Bundle Manager', 'smarty-upsell-bundle-manager'),
             'manage_options',
             'smarty-custom-upsell-settings',
             'smarty_settings_page_content',
@@ -271,7 +271,7 @@ if (!function_exists('smarty_settings_page_content')) {
     function smarty_settings_page_content() {
         ?>
        <div class="wrap">
-            <h1><?php _e('Custom Upsell Products Design | Settings', 'smarty-upsell-bundle-manager'); ?></h1>
+            <h1><?php _e('Upsell Bundle Manager | Settings', 'smarty-upsell-bundle-manager'); ?></h1>
             <form method="post" action="options.php">
                 <?php
                 settings_fields('smarty_settings_group');
