@@ -1201,7 +1201,9 @@ if (!function_exists('smarty_public_custom_js')) {
                 var decimals = <?php echo $decimals; ?>;
                 var youSaveText = '<?php echo $youSaveText; ?>';
                 var displaySavings = <?php echo json_encode($display_savings); ?>;
-
+				var currencyCode = '<?php echo get_woocommerce_currency(); ?>'; // Get the current currency code (like CZK, HUF)
+				var skipFormattingCurrencies = ['CZK', 'HUF'];
+				
                 function formatPrice(price, isRegular) {
                     var formattedPrice = parseFloat(price).toLocaleString(undefined, {
                         minimumFractionDigits: decimals,
@@ -1218,13 +1220,26 @@ if (!function_exists('smarty_public_custom_js')) {
                         return formattedPrice + currencySpacing + currencySymbol;
                     }
                 }
-
+				
+				// Function to remove .00 if the currency is CZK or HUF
+				function hideDecimalsForCZKHUF() {
+					if (skipFormattingCurrencies.includes(currencyCode)) {
+						$('.price').each(function() {
+							var priceText = $(this).text();
+							// Remove .00 from prices using regex
+							var newText = priceText.replace(/(\.00)/g, '');
+							$(this).text(newText);
+						});
+					}
+				}
+			
                 function formatSavings(regularPrice, salePrice) {
-                    if (!displaySavings) {
-                        return ''; // if disabled, return an empty string
-                    }
+					if (!displaySavings || skipFormattingCurrencies.includes(currencyCode)) {
+						return ''; // if disabled or for CZK/HUF, return empty string
+					}
+					
                     var savings = regularPrice - salePrice;
-                    
+									
                     // Remove <bdi> tags from formatted savings
                     var formattedSavings = formatPrice(savings.toFixed(2), false);
                     return '<span class="savings-text" style="font-size:' + savingsTextSize + '; color:' + savingsTextColor + ';">(' + youSaveText + ' ' + formattedSavings + ')</span>';
@@ -1237,31 +1252,37 @@ if (!function_exists('smarty_public_custom_js')) {
                     $(this).addClass('active');
                 });
 
-                $('.upsell-container .price:not(.old_price)').each(function() {
-                    var regularPriceText = $(this).closest('.main_title_wrap').find('.old_price').text().replace(/[^\d.,]/g, '');
-                    var salePriceText = $(this).text().replace(/[^\d.,]/g, '');
+                // Apply the price formatting
+				$('.upsell-container .price:not(.old_price)').each(function() {
+					if (skipFormattingCurrencies.includes(currencyCode)) { return ''; }
+					
+					var regularPriceText = $(this).closest('.main_title_wrap').find('.old_price').text().replace(/[^\d.,]/g, '');
+					var salePriceText = $(this).text().replace(/[^\d.,]/g, '');
 
-                    if (regularPriceText && salePriceText) {
-                        var regularPrice = parseFloat(regularPriceText.replace(decimalSeparator, '.'));
-                        var salePrice = parseFloat(salePriceText.replace(decimalSeparator, '.'));
+					if (regularPriceText && salePriceText) {
+						var regularPrice = parseFloat(regularPriceText.replace(decimalSeparator, '.'));
+						var salePrice = parseFloat(salePriceText.replace(decimalSeparator, '.'));
 
-                        var formattedRegularPrice = formatPrice(regularPrice.toFixed(2), true);
-                        var formattedSalePrice = formatPrice(salePrice.toFixed(2), false);
-                        var savingsMessage = formatSavings(regularPrice, salePrice);
+						var formattedRegularPrice = formatPrice(regularPrice.toFixed(2), true);
+						var formattedSalePrice = formatPrice(salePrice.toFixed(2), false);
+						var savingsMessage = formatSavings(regularPrice, salePrice);
 
-                        $(this).closest('.main_title_wrap').find('.old_price').text(formattedRegularPrice);
-                        $(this).html(formattedSalePrice + ' ' + savingsMessage);
-                    } else {
-                        var priceText = $(this).text().replace(/[^\d.,]/g, '');
-                        priceText = priceText.replace(decimalSeparator, '.');
-                        $(this).text(formatPrice(priceText, $(this).hasClass('old_price')));
-                    }
-                });
+						$(this).closest('.main_title_wrap').find('.old_price').text(formattedRegularPrice);
+						$(this).html(formattedSalePrice + ' ' + savingsMessage);
+					} else {
+						var priceText = $(this).text().replace(/[^\d.,]/g, '');
+						priceText = priceText.replace(decimalSeparator, '.');
+						$(this).text(formatPrice(priceText, $(this).hasClass('old_price')));
+					}
+				});
+				
+				// Apply hiding for ".00" for CZK/HUF after rendering the prices
+    			hideDecimalsForCZKHUF();
                 
                 // Update additional product prices and savings
                 $('input[name="additional_products[]"]').each(function() {
                     var regularPrice = parseFloat($(this).data('regular-price'));
-                    var salePrice = parseFloat($(this).data('sale-price'));
+            		var salePrice = parseFloat($(this).data('sale-price'));
 
                     //console.log("Debug - Additional Product:", {
                     //    id: $(this).val(),
@@ -1270,15 +1291,15 @@ if (!function_exists('smarty_public_custom_js')) {
                     //});
 
                     if (salePrice && regularPrice) {
-                        var formattedRegularPrice = formatPrice(regularPrice.toFixed(2));
-                        var formattedSalePrice = formatPrice(salePrice.toFixed(2));
-                        var savingsMessage = formatSavings(regularPrice, salePrice);
+						var formattedRegularPrice = formatPrice(regularPrice.toFixed(2));
+						var formattedSalePrice = formatPrice(salePrice.toFixed(2));
+						var savingsMessage = formatSavings(regularPrice, salePrice);
 
-                        $(this).closest('label').find('.additional-product-price').html('<span class="price old_price">' + formattedRegularPrice + '</span> <span class="price">' + formattedSalePrice + '</span> ' + savingsMessage);
-                    } else if (regularPrice) {
-                        var formattedPrice = formatPrice(regularPrice.toFixed(2));
-                        $(this).closest('label').find('.additional-product-price').html('<span class="price">' + formattedPrice + '</span>');
-                    }
+						$(this).closest('label').find('.additional-product-price').html('<span class="price old_price">' + formattedRegularPrice + '</span> <span class="price">' + formattedSalePrice + '</span> ' + savingsMessage);
+					} else if (regularPrice) {
+						var formattedPrice = formatPrice(regularPrice.toFixed(2));
+						$(this).closest('label').find('.additional-product-price').html('<span class="price">' + formattedPrice + '</span>');
+					}
                 });
                 
                 $('form.cart').on('submit', function(e) {
