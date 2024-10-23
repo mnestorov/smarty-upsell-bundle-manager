@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: SM - Custom Upsell Products Design for WooCommerce
- * Plugin URI: https://smartystudio.net/smarty-custom-upsell-products-design
+ * Plugin URI: https://github.com/mnestorov/smarty-custom-upsell-products-design
  * Description: Designed to change the product variation design for single products in WooCommerce.
  * Version: 1.0.0
  * Author: Smarty Studio | Martin Nestorov
- * Author URI: https://smartystudio.net
+ * Author URI: https://github.com/mnestorov
  * Text Domain: smarty-custom-upsell-products-design
  * Domain Path: /languages/
  * WC requires at least: 3.0.0
