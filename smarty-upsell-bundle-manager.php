@@ -7,17 +7,17 @@
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  * 
- * @link                    https://smartystudio.net
+ * @link                    https://github.com/mnestorov
  * @since                   1.0.0
  * @package                 Smarty_Upsell_Bundle_Manager
  * 
  * @wordpress-plugin
  * Plugin Name:             SM - Upsell Bundle Manager for WooCommerce
- * Plugin URI:              https://github.dev/smartystudio/smarty-upsell-bundle-manager
+ * Plugin URI:              https://github.com/mnestorov/smarty-upsell-bundle-manager
  * Description:             Designed to change the product variation design and add additional (bundle) products for single products in WooCommerce.
  * Version:                 1.0.0
  * Author:                  Smarty Studio | Martin Nestorov
- * Author URI:              https://smartystudio.net
+ * Author URI:              https://github.com/mnestorov
  * License:                 GPL-2.0+
  * License URI:             http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:             smarty-upsell-bundle-manager
