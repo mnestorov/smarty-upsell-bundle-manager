@@ -1223,8 +1223,9 @@ if (!function_exists('smarty_public_custom_js')) {
 				
 				// Function to remove .00 if the currency is CZK or HUF
 				function hideDecimalsForCZKHUF() {
-					if (skipFormattingCurrencies.includes(currencyCode)) {
-						$('.price').each(function() {
+					if (skipFormattingCurrencies.includes(currencyCode) && $('body').hasClass('single-product')) {
+						// Target only prices in specific containers
+						$('.upsell_select_box .price, .upsell-container .price').each(function() {
 							var priceText = $(this).text();
 							// Remove .00 from prices using regex
 							var newText = priceText.replace(/(\.00)/g, '');
@@ -1276,8 +1277,8 @@ if (!function_exists('smarty_public_custom_js')) {
 					}
 				});
 				
-				// Apply hiding for ".00" for CZK/HUF after rendering the prices
-    			hideDecimalsForCZKHUF();
+				// Apply .00 hiding for CZK/HUF after rendering the prices
+				hideDecimalsForCZKHUF(); // only on single product pages
                 
                 // Update additional product prices and savings
                 $('input[name="additional_products[]"]').each(function() {
