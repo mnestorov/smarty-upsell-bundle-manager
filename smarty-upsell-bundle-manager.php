@@ -992,8 +992,8 @@ if (!function_exists('smarty_public_custom_css')) {
 
                 .additional-products label.active, 
                 .additional-products label:hover {
-                    background: #efe5d0;
-					border: 2px solid #d2b885;
+                    background: #eff9f9;
+					border: 2px solid #66cac4;
 					transition: all 0.3s ease-in;
                 }
 
@@ -1003,7 +1003,7 @@ if (!function_exists('smarty_public_custom_css')) {
                     margin-right: 10px;
                     border-radius: 3px;
                     background-color: rgba(249, 247, 246, 0.9);
-                    border: 1px solid #d2b885;
+                    border: 1px solid #66cac4;
                     cursor: pointer;
                     -webkit-appearance: none;
                     -moz-appearance: none;
@@ -1018,7 +1018,7 @@ if (!function_exists('smarty_public_custom_css')) {
                     content: "";
                     width: 10px;
                     height: 10px;
-                    background-color: #d2b885;
+                    background-color: #66cac4;
                     border-radius: 2px;
                     display: none;
                 }
@@ -1029,7 +1029,7 @@ if (!function_exists('smarty_public_custom_css')) {
 
                 .additional-product-image {
                     width: 15%;
-    				margin-right: 5px;
+    				margin-right: 10px;
                     border: 1px solid <?php echo esc_attr($image_border_color); ?>;
                     border-radius: 5px;
                 }
