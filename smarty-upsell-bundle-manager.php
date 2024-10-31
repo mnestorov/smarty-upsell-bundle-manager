@@ -79,12 +79,14 @@ if (!function_exists('smarty_register_settings')) {
         register_setting('smarty_settings_group', 'smarty_display_savings');
         register_setting('smarty_settings_group', 'smarty_debug_mode');
         register_setting('smarty_settings_group', 'smarty_debug_notices_enabled');
+        register_setting('smarty_settings_group', 'smarty_free_delivery_text');
         
         // Add settings sections
         add_settings_section('smarty_upsell_styling_section', 'Variable (Upsell) Products', 'smarty_upsell_styling_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_additional_products_section', 'Additional Products', 'smarty_additional_products_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_colors_section', 'Colors', 'smarty_colors_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_font_sizes_section', 'Font Sizes', 'smarty_font_sizes_section_cb', 'smarty_settings_page');
+        add_settings_section('smarty_text_field_section', 'Custom Text Field', 'smarty_text_field_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_currency_section', 'Currency Symbol', 'smarty_currency_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_display_options_section', 'Display Options', 'smarty_display_options_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_settings_section', 'Debug', 'smarty_settings_section_cb', 'smarty_settings_page');
@@ -117,6 +119,9 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_field('smarty_label_2_font_size', 'Label 2', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_label_2_font_size']);
         add_settings_field('smarty_savings_text_size', 'Savings Text', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_savings_text_size']);
         
+        // Add settings field for custom "free delivery" text
+        add_settings_field('smarty_free_delivery_text', 'Free Delivery Text', 'smarty_text_field_cb', 'smarty_settings_page', 'smarty_text_field_section', ['id' => 'smarty_free_delivery_text']);
+
         // Add settings fields for currency
         add_settings_field('smarty_currency_symbol_position', 'Position', 'smarty_currency_position_field_cb', 'smarty_settings_page', 'smarty_currency_section', ['id' => 'smarty_currency_symbol_position']);
         add_settings_field('smarty_currency_symbol_spacing', 'Spacing', 'smarty_currency_spacing_field_cb', 'smarty_settings_page', 'smarty_currency_section', ['id' => 'smarty_currency_symbol_spacing']);
@@ -186,6 +191,19 @@ if (!function_exists('smarty_font_size_field_cb')) {
         $option = get_option($args['id'], '14');
         echo '<input type="range" name="' . $args['id'] . '" min="10" max="30" value="' . esc_attr($option) . '" class="smarty-font-size-slider" />';
         echo '<span id="' . $args['id'] . '-value">' . esc_attr($option) . 'px</span>';
+    }
+}
+
+if (!function_exists('smarty_text_field_section_cb')) {
+    function smarty_text_field_section_cb() {
+        echo '<p>Use custom text for "free delivery".</p>';
+    }
+}
+
+if (!function_exists('smarty_text_field_cb')) {
+    function smarty_text_field_cb($args) {
+        $option = get_option($args['id'], 'Free delivery'); // Default text
+        echo '<input type="text" name="' . $args['id'] . '" value="' . esc_attr($option) . '" />';
     }
 }
 
@@ -789,7 +807,7 @@ if (!function_exists('smarty_public_custom_css')) {
         $savings_text_size = get_option('smarty_savings_text_size', '14') . 'px';
         $savings_text_color = get_option('smarty_savings_text_color', '#000000');
         $image_border_color = get_option('smarty_image_border_color', '#000000');
-
+        
         if (is_product()) { ?>
             <?php if ($upsell_styling_enabled) { ?>
                 <style>

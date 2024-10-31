@@ -1,5 +1,6 @@
 <?php
 $up_sell_design = function_exists('smarty_get_attr_fields') && $attr_id ? smarty_get_attr_fields($attr_id) : false;
+$free_delivery_text = get_option('smarty_free_delivery_text', 'Free delivery');
 
 if ($up_sell_design) :
     foreach ($attributes as $attribute_name => $options) :
@@ -74,7 +75,7 @@ if ($up_sell_design) :
                                                 <?php } ?>
                                                 
                                                 <?php if (!is_null($free_delivery_amount) && $price > $free_delivery_amount) : ?>
-                                                    <span class="free_delivery"><?= __('Free delivery', 'smarty-upsell-bundle-manager'); ?></span>
+                                                    <span class="free_delivery"><?= esc_html($free_delivery_text); ?></span>
                                                 <?php endif; ?>
                                             </div>
                                         </div>
