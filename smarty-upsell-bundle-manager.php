@@ -3,13 +3,13 @@
  * Plugin Name: SM - Upsell Bundle Manager for WooCommerce
  * Plugin URI:  https://github.com/mnestorov/smarty-upsell-bundle-manager
  * Description: Designed to change the product variation design for single products in WooCommerce.
- * Version:     1.0.0
+ * Version:     1.0.1
  * Author:      Smarty Studio | Martin Nestorov
  * Author URI:  https://github.com/mnestorov
  * Text Domain: smarty-upsell-bundle-manager
  * Domain Path: /languages/
  * WC requires at least: 3.5.0
- * WC tested up to: 9.0.2
+ * WC tested up to: 9.4.1
  * Requires Plugins: woocommerce
  */
 
@@ -75,6 +75,9 @@ if (!function_exists('smarty_register_settings')) {
         register_setting('smarty_settings_group', 'smarty_currency_symbol_spacing');
         register_setting('smarty_settings_group', 'smarty_savings_text_size');
         register_setting('smarty_settings_group', 'smarty_savings_text_color');
+        register_setting('smarty_settings_group', 'smarty_image_width');
+        register_setting('smarty_settings_group', 'smarty_image_margin_top');
+        register_setting('smarty_settings_group', 'smarty_image_margin_right');
         register_setting('smarty_settings_group', 'smarty_image_border_color');
         register_setting('smarty_settings_group', 'smarty_display_savings');
         register_setting('smarty_settings_group', 'smarty_debug_mode');
@@ -85,6 +88,7 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_section('smarty_upsell_styling_section', 'Variable (Upsell) Products', 'smarty_upsell_styling_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_additional_products_section', 'Additional Products', 'smarty_additional_products_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_colors_section', 'Colors', 'smarty_colors_section_cb', 'smarty_settings_page');
+        add_settings_section('smarty_image_sizes_section', 'Image Sizes', 'smarty_image_sizes_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_font_sizes_section', 'Font Sizes', 'smarty_font_sizes_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_text_field_section', 'Custom Text Field', 'smarty_text_field_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_currency_section', 'Currency Symbol', 'smarty_currency_section_cb', 'smarty_settings_page');
@@ -109,6 +113,11 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_field('smarty_label_2_color', 'Label 2 (Text)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_label_2_color']);
         add_settings_field('smarty_image_border_color', 'Image Border', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_image_border_color']);
         add_settings_field('smarty_savings_text_color', 'Savings Text', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_savings_text_color']);
+
+        // Add settings fields for image sizes
+        add_settings_field('smarty_image_width', 'Image Width (%)', 'smarty_image_percent_size_field_cb', 'smarty_settings_page', 'smarty_image_sizes_section', ['id' => 'smarty_image_width']);
+        add_settings_field('smarty_image_margin_top', 'Image Margin Top (px)', 'smarty_image_px_size_field_cb', 'smarty_settings_page', 'smarty_image_sizes_section', ['id' => 'smarty_image_margin_top']);
+        add_settings_field('smarty_image_margin_right', 'Image Margin Right (px)', 'smarty_image_px_size_field_cb', 'smarty_settings_page', 'smarty_image_sizes_section', ['id' => 'smarty_image_margin_right']);
 
         // Add settings fields for font sizes
         add_settings_field('smarty_price_font_size', 'Price', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_price_font_size']);
@@ -194,6 +203,28 @@ if (!function_exists('smarty_font_size_field_cb')) {
     }
 }
 
+if (!function_exists('smarty_image_sizes_section_cb')) {
+    function smarty_image_sizes_section_cb() {
+        echo '<p>Customize the sizes for images in your WooCommerce upsell products.</p>';
+    }
+}
+
+if (!function_exists('smarty_image_percent_size_field_cb')) {
+    function smarty_image_percent_size_field_cb($args) {
+        $option = get_option($args['id'], '14');
+        echo '<input type="range" name="' . $args['id'] . '" min="10" max="30" value="' . esc_attr($option) . '" class="smarty-image-percent-size-slider" />';
+        echo '<span id="' . $args['id'] . '-value">' . esc_attr($option) . '%</span>';
+    }
+}
+
+if (!function_exists('smarty_image_px_size_field_cb')) {
+    function smarty_image_px_size_field_cb($args) {
+        $option = get_option($args['id'], '14');
+        echo '<input type="range" name="' . $args['id'] . '" min="10" max="30" value="' . esc_attr($option) . '" class="smarty-image-px-size-slider" />';
+        echo '<span id="' . $args['id'] . '-value">' . esc_attr($option) . 'px</span>';
+    }
+}
+
 if (!function_exists('smarty_text_field_section_cb')) {
     function smarty_text_field_section_cb() {
         echo '<p>Use custom text for "free delivery".</p>';
@@ -202,7 +233,7 @@ if (!function_exists('smarty_text_field_section_cb')) {
 
 if (!function_exists('smarty_text_field_cb')) {
     function smarty_text_field_cb($args) {
-        $option = get_option($args['id'], 'Free delivery'); // Default text
+        $option = get_option($args['id'], ''); // Default is empty
         echo '<input type="text" name="' . $args['id'] . '" value="' . esc_attr($option) . '" />';
     }
 }
@@ -305,10 +336,22 @@ if (!function_exists('smarty_settings_page_content')) {
             jQuery(document).ready(function($) {
                 $('.smarty-color-field').wpColorPicker();
 
-                // Update the font size value display
-                $('.smarty-font-size-slider').on('input', function() {
+                // Update the font size and image width value display
+                $('.smarty-font-size-slider, .smarty-image-percent-size-slider, .smarty-image-px-size-slider').on('input', function() {
                     var sliderId = $(this).attr('name');
-                    $('#' + sliderId + '-value').text($(this).val() + 'px');
+                    var unit;
+
+                    // Determine the unit based on the class
+                    if ($(this).hasClass('smarty-image-percent-size-slider')) {
+                        unit = '%';
+                    } else if ($(this).hasClass('smarty-font-size-slider') || $(this).hasClass('smarty-image-px-size-slider')) {
+                        unit = 'px';
+                    } else {
+                        unit = ''; // Default to no unit if not identified
+                    }
+
+                    // Update the value display with the correct unit
+                    $('#' + sliderId + '-value').text($(this).val() + unit);
                 });
             });
         </script>
@@ -806,6 +849,9 @@ if (!function_exists('smarty_public_custom_css')) {
         $label_2_font_size = get_option('smarty_label_2_font_size', '14');
         $savings_text_size = get_option('smarty_savings_text_size', '14') . 'px';
         $savings_text_color = get_option('smarty_savings_text_color', '#000000');
+        $image_width = get_option('smarty_image_width', '16');
+        $image_margin_top = get_option('smarty_image_margin_top', '18');
+        $image_margin_right = get_option('smarty_image_margin_right', '10');
         $image_border_color = get_option('smarty_image_border_color', '#000000');
         
         if (is_product()) { ?>
@@ -892,10 +938,10 @@ if (!function_exists('smarty_public_custom_css')) {
                     }
                     
                     .upsell-container .variable_img {
-                        width: 16%;
+                        width: <?php echo esc_attr($image_width); ?>%;
                         float: right;
-                        margin-top: 18px;
-                        margin-right: 10px;
+                        margin-top: <?php echo esc_attr($image_margin_top); ?>px;
+                        margin-right: <?php echo esc_attr($image_margin_right); ?>px;
                         border: 1px solid <?php echo esc_attr($image_border_color); ?>;
                         border-radius: 5px;
                     }
