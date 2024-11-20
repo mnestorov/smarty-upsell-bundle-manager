@@ -95,7 +95,7 @@ if ($up_sell_design) :
                         'selected' => reset($options), // Pass variable
                     ]);
 
-                    echo end($attribute_keys) === $attribute_name ? wp_kses_post(apply_filters('woocommerce_reset_variations_link', '<a class="reset_variations" href="#">' . esc_html__('Clear', 'mn-wordpress-custom-upsell-products-design') . '</a>')) : '';
+                    echo end($attribute_keys) === $attribute_name ? wp_kses_post(apply_filters('woocommerce_reset_variations_link', '<a class="reset_variations" href="#">' . esc_html__('Clear', 'woocommerce') . '</a>')) : '';
                     ?>
                 </div>
             </div>
