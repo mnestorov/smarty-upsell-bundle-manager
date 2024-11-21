@@ -85,6 +85,11 @@ if (!function_exists('smarty_register_settings')) {
         register_setting('smarty_settings_group', 'smarty_debug_notices_enabled');
         register_setting('smarty_settings_group', 'smarty_free_delivery_text');
         register_setting('smarty_settings_group', 'smarty_free_delivery_amount');
+        register_setting('smarty_settings_group', 'smarty_additional_label_bg_color');
+        register_setting('smarty_settings_group', 'smarty_additional_label_text_color');
+        register_setting('smarty_settings_group', 'smarty_additional_label_text');
+        register_setting('smarty_settings_group', 'smarty_additional_label_number');
+        register_setting('smarty_settings_group', 'smarty_additional_label_font_size');
         
         // Add settings sections
         add_settings_section('smarty_upsell_styling_section', 'Variable (Upsell) Products', 'smarty_upsell_styling_section_cb', 'smarty_settings_page');
@@ -92,7 +97,7 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_section('smarty_colors_section', 'Colors', 'smarty_colors_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_image_sizes_section', 'Image Sizes', 'smarty_image_sizes_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_font_sizes_section', 'Font Sizes', 'smarty_font_sizes_section_cb', 'smarty_settings_page');
-        add_settings_section('smarty_free_delivery_section', 'Free Delivery', 'smarty_free_delivery_section_cb', 'smarty_settings_page');
+        add_settings_section('smarty_custom_text_section', 'Custom Text', 'smarty_custom_text_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_currency_section', 'Currency Symbol', 'smarty_currency_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_display_options_section', 'Display Options', 'smarty_display_options_section_cb', 'smarty_settings_page');
         add_settings_section('smarty_settings_section', 'Debug', 'smarty_settings_section_cb', 'smarty_settings_page');
@@ -116,7 +121,9 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_field('smarty_label_2_color', 'Label 2 (Text)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_label_2_color']);
         add_settings_field('smarty_image_border_color', 'Image Border', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_image_border_color']);
         add_settings_field('smarty_savings_text_color', 'Savings Text', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_savings_text_color']);
-
+        add_settings_field('smarty_additional_label_bg_color', 'Additional Label (Background)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_additional_label_bg_color']);
+        add_settings_field('smarty_additional_label_text_color', 'Additional Label (Text)', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_additional_label_text_color']);
+        
         // Add settings fields for image sizes
         add_settings_field('smarty_image_width', 'Image Width (%)', 'smarty_image_percent_size_field_cb', 'smarty_settings_page', 'smarty_image_sizes_section', ['id' => 'smarty_image_width']);
         add_settings_field('smarty_image_margin_top', 'Image Margin Top (px)', 'smarty_image_px_size_field_cb', 'smarty_settings_page', 'smarty_image_sizes_section', ['id' => 'smarty_image_margin_top']);
@@ -130,15 +137,18 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_field('smarty_label_1_font_size', 'Label 1', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_label_1_font_size']);
         add_settings_field('smarty_label_2_font_size', 'Label 2', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_label_2_font_size']);
         add_settings_field('smarty_savings_text_size', 'Savings Text', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_savings_text_size']);
+        add_settings_field('smarty_additional_label_font_size', 'Additional Label', 'smarty_font_size_field_cb', 'smarty_settings_page', 'smarty_font_sizes_section', ['id' => 'smarty_additional_label_font_size']);
         
-        // Add settings field for custom "free delivery" text and free delivery amount
-        add_settings_field('smarty_free_delivery_text', 'Free Delivery Text', 'smarty_text_field_cb', 'smarty_settings_page', 'smarty_free_delivery_section', ['id' => 'smarty_free_delivery_text']);
-        add_settings_field('smarty_free_delivery_amount', 'Free Delivery Amount', 'smarty_number_field_cb', 'smarty_settings_page', 'smarty_free_delivery_section');
+        // Add settings field for custom "free delivery" text, free delivery amount and custom additional label text and number
+        add_settings_field('smarty_free_delivery_text', 'Free Delivery Text', 'smarty_text_field_cb', 'smarty_settings_page', 'smarty_custom_text_section', ['id' => 'smarty_free_delivery_text']);
+        add_settings_field('smarty_free_delivery_amount', 'Free Delivery Amount', 'smarty_number_field_cb', 'smarty_settings_page', 'smarty_custom_text_section');
+        add_settings_field('smarty_additional_label_text', 'Additional Label Text', 'smarty_additional_label_text_field_cb', 'smarty_settings_page', 'smarty_custom_text_section');
+        add_settings_field('smarty_additional_label_number', 'Additional Label Number', 'smarty_additional_label_number_field_cb', 'smarty_settings_page', 'smarty_custom_text_section');
 
         // Add settings fields for currency
         add_settings_field('smarty_currency_symbol_position', 'Position', 'smarty_currency_position_field_cb', 'smarty_settings_page', 'smarty_currency_section', ['id' => 'smarty_currency_symbol_position']);
         add_settings_field('smarty_currency_symbol_spacing', 'Spacing', 'smarty_currency_spacing_field_cb', 'smarty_settings_page', 'smarty_currency_section', ['id' => 'smarty_currency_symbol_spacing']);
-    
+       
         // Add settings field for display options
         add_settings_field('smarty_display_savings','Turn On/Off savings text', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_display_options_section', ['id' => 'smarty_display_savings']);
         
@@ -229,9 +239,9 @@ if (!function_exists('smarty_image_px_size_field_cb')) {
     }
 }
 
-if (!function_exists('smarty_free_delivery_section_cb')) {
-    function smarty_free_delivery_section_cb() {
-        echo '<p>Use custom text and set the amount for free delivery.</p>';
+if (!function_exists('smarty_custom_text_section_cb')) {
+    function smarty_custom_text_section_cb() {
+        echo '<p>Use custom text and set the amount for free delivery and/or for additional label(s).</p>';
     }
 }
 
@@ -245,9 +255,25 @@ if (!function_exists('smarty_text_field_cb')) {
 
 if (!function_exists('smarty_number_field_cb')) {
     function smarty_number_field_cb() {
-        $option = get_option('smarty_free_delivery_amount', '100'); // Default to 100
+        $option = get_option('smarty_free_delivery_amount');
         echo '<input type="number" step="0.01" name="smarty_free_delivery_amount" value="' . esc_attr($option) . '" />';
         echo '<p class="description">Set the minimum amount required for free delivery.</p>';
+    }
+}
+
+if (!function_exists('smarty_additional_label_text_field_cb')) {
+    function smarty_additional_label_text_field_cb() {
+        $option = get_option('smarty_additional_label_text');
+        echo '<input type="text" name="smarty_additional_label_text" value="' . esc_attr($option) . '" />';
+        echo '<p class="description">Set the additional label text.</p>';
+    }
+}
+
+if (!function_exists('smarty_additional_label_number_field_cb')) {
+    function smarty_additional_label_number_field_cb() {
+        $option = get_option('smarty_additional_label_number');
+        echo '<input type="number" step="0.01" name="smarty_additional_label_number" value="' . esc_attr($option) . '" />';
+        echo '<p class="description">Set the additional label number.</p>';
     }
 }
 
@@ -668,7 +694,68 @@ register_activation_hook(__FILE__, function() {
     if (get_option('smarty_free_delivery_amount') === false) {
         update_option('smarty_free_delivery_amount', '100'); // Default to 100
     }
+    if (get_option('smarty_additional_label_bg_color') === false) {
+        update_option('smarty_additional_label_bg_color', '#222222');
+    }
+    if (get_option('smarty_additional_label_text_color') === false) {
+        update_option('smarty_additional_label_text_color', '#ffffff');
+    }
+    if (get_option('smarty_additional_label_text') === false) {
+        update_option('smarty_additional_label_text', 'some text');
+    }
+    if (get_option('smarty_additional_label_number') === false) {
+        update_option('smarty_additional_label_number', 15);
+    }
 });
+
+if (!function_exists('smarty_discount_label_shortcode')) {
+    function smarty_discount_label_shortcode() {
+        global $product;
+
+        if ( ! $product instanceof WC_Product ) {
+            return ''; // Ensure it's only used in a product loop
+        }
+
+        // Get plugin settings
+        $additional_label_bg_color = get_option('smarty_additional_label_bg_color', '#222222');
+        $additional_label_text_color = get_option('smarty_additional_label_text_color', '#ffffff');
+        $additional_label_text = get_option('smarty_additional_label_text', 'some text');
+        $additional_label_number = (int) get_option('smarty_additional_label_number', 14);
+
+        // Initialize prices
+        $regular_price = 0;
+        $sale_price = 0;
+
+        // Check if it's a variable product
+        if ( $product->is_type( 'variable' ) ) {
+            // Get variation prices
+            $prices = $product->get_variation_prices( true ); // Includes sale prices
+            $regular_price = max( $prices['regular_price'] ); // Highest regular price among variations
+            $sale_price = min( $prices['sale_price'] ); // Lowest sale price among variations (if any)
+        } else {
+            // For simple products, use regular and sale price directly
+            $regular_price = (float) $product->get_regular_price();
+            $sale_price = (float) $product->get_sale_price();
+        }
+
+        // Calculate the current discount percentage
+        $current_discount = 0;
+        if ($regular_price > 0 && $sale_price > 0 && $sale_price < $regular_price) {
+            $current_discount = round((($regular_price - $sale_price) / $regular_price) * 100);
+        }
+
+        // Add the extra percentage
+        $total_discount = $current_discount > 0 ? $current_discount + $additional_label_number : $additional_label_number;
+
+        // Generate the label content
+        $label_text = "<span class='number' style='background-color:{$additional_label_text_color};color:{$additional_label_bg_color};'>-{$total_discount}%</span>";
+        $label_text .= " <span class='text' style='background-color:{$additional_label_bg_color};color:{$additional_label_text_color};'>{$additional_label_text}</span>";
+
+        // Return the label HTML
+        return '<div class="additional-label-text">' . $label_text . '</div>';
+    }
+    add_shortcode('smarty_additional_label', 'smarty_discount_label_shortcode');
+}
 
 if (!function_exists('smarty_add_custom_fields_to_variations')) {
     /**
@@ -912,12 +999,16 @@ if (!function_exists('smarty_public_custom_css')) {
                     .checkmark {
                         display: none;
                     }
+
+                    .main_title_wrap:nth-child(0) {
+                        margin-top: 20px;
+                    }
                     
                     .main_title_wrap {
                         position: relative;
                         height: 115px;
                         padding-left: 15px;
-                        margin: 30px 0;
+                        margin: 0 0 30px;
                         box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
                         -webkit-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
                         -moz-box-shadow: 0px 3px 11px -2px rgba(0, 0, 0, 0.55);
@@ -1130,7 +1221,6 @@ if (!function_exists('smarty_public_custom_css')) {
                     margin-right: auto;
                 }
 
-
                 .additional-product-regular-price > .woocommerce-Price-amount.amount bdi {
                     font-size: <?php echo esc_attr($old_price_font_size) . 'px'; ?>;
                     color: <?php echo esc_attr($old_price_color); ?>;
@@ -1212,6 +1302,72 @@ if (!function_exists('smarty_public_custom_css')) {
     }
     add_action('wp_head', 'smarty_public_custom_css');    
 }
+
+function smarty_add_custom_css_for_shop_page() {
+    // Check if the current page is the WooCommerce shop page
+    if (is_shop() || is_product()) {
+        // Retrieve custom options for the promo styles
+        $additional_label_bg_color = get_option('smarty_additional_label_bg_color', '#222222');
+        $additional_label_text_color = get_option('smarty_additional_label_text_color', '#ffffff');
+        $additional_label_font_size = get_option('smarty_additional_label_font_size', '16');
+
+        echo "
+        <style>
+            .additional-label-text {
+                position: relative;
+                top: 5px;
+                font-weight: bold;
+                display: flex;
+                z-index: 10;
+                border-radius: 10px;
+            }
+
+            .additional-label-text .number {
+                background-color: {$additional_label_bg_color};
+                color: {$additional_label_text_color};
+                font-size: {$additional_label_font_size}px;
+                align-content: center;
+                padding: 0 20px 0 10px;
+                margin-right: 5px;
+                border-top-left-radius: 5px;
+                border-top-right-radius: 15px;
+                border-bottom-left-radius: 15px;
+                border-bottom-right-radius: 5px;
+            }
+
+            .additional-label-text .text {
+                background-color: {$additional_label_bg_color};
+                color: {$additional_label_text_color};
+                margin: 0 0 0 -20px;
+                padding: 3px 10px;
+                width: 100%;
+                border-top-left-radius: 0;
+                border-top-right-radius: 15px;
+                border-bottom-left-radius: 15px;
+                border-bottom-right-radius: 5px;
+            }
+
+            @media only screen and (max-width: 600px) {
+                .additional-label-text .number,
+                .additional-label-text .text {
+                    font-size: 14px;
+                }
+            }
+        </style>
+        ";
+    }
+
+    if (is_product()) {
+        echo "
+        <style>
+            .additional-label-text {
+                padding: 10px 0;
+            }
+        </style>
+        ";
+    }
+}
+add_action('wp_head', 'smarty_add_custom_css_for_shop_page');
 
 if (!function_exists('smarty_custom_thankyou_page_css')) {
 	function smarty_custom_thankyou_page_css() {
@@ -1977,8 +2133,7 @@ if (!function_exists('smarty_choose_additional_products_for_product_cb')) {
             $selected = in_array($product->get_id(), $product_additional_products) ? 'selected' : '';
             echo '<option value="' . esc_attr($product->get_id()) . '" ' . esc_attr($selected) . '>' . esc_html($product->get_name()) . '</option>';
         }
-        echo '</select>';
-    ?>
+        echo '</select>'; ?>
         <script>
             jQuery(document).ready(function($) {
                 $('#smarty_choose_additional_products').select2({
@@ -1986,8 +2141,7 @@ if (!function_exists('smarty_choose_additional_products_for_product_cb')) {
                     allowClear: true
                 });
             });
-        </script>
-    <?php
+        </script><?php
     }
 }
 

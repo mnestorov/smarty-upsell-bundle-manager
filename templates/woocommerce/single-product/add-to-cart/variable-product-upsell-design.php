@@ -6,7 +6,7 @@ if ($up_sell_design) :
     foreach ($attributes as $attribute_name => $options) :
         if (taxonomy_exists($attribute_name)) :
             $terms = wc_get_product_terms($product->get_id(), $attribute_name, ['fields' => 'all']);
-            ?>
+			?>
             <div class="product_variation_section variations upsell-container">
                 <div class="variation_row" id="variation_select">
                     <div class="swatches-select variation_sub">
@@ -35,10 +35,34 @@ if ($up_sell_design) :
                                     !empty($local_prices['price']) ? $local_prices['price'] : $single_variation->get_price(),
                                     !empty($local_prices['currency']) ? $local_prices['currency'] : $currency,
                                 ];
-								
                                 ?>
                                 <label class="check_container has_variations<?= $key_v == 0 ? ' first' : '' ?>">
                                     <span class="main_content">
+										
+										<?php // Additional lables
+										$regular_price = (float) $single_variation->get_regular_price();
+										$sale_price = (float) $single_variation->get_price();
+										$additional_label_bg_color = get_option('smarty_additional_label_bg_color', '#222222');;
+										$additional_label_text_color = get_option('smarty_additional_label_text_color', '#ffffff');
+										$additional_label_text = get_option('smarty_additional_label_text', 'Extra Discount');
+										$default_additional_discount = (int) get_option('smarty_additional_label_number', 15);
+
+										$discount_percentage = 0;
+										if ($regular_price > 0 && $sale_price < $regular_price) {
+											$discount_percentage = round((($regular_price - $sale_price) / $regular_price) * 100);
+										}
+
+										$total_discount = $discount_percentage > 0 ? $discount_percentage + $default_additional_discount : $default_additional_discount; 
+										?>
+										<div class="additional-label-text">
+											<span class="number" style="background-color:<?php echo $additional_label_text_color; ?>; color: <?php echo $additional_label_bg_color; ?>;">
+												-<?php echo $total_discount; ?>%
+											</span>
+											<span class="text" style="background-color:<?php echo $additional_label_bg_color; ?>; color: <?php echo $additional_label_text_color; ?>;">
+												<?php echo $additional_label_text; ?>
+											</span>
+										</div>
+										
                                         <div class="main_title_wrap">
                                             <div class="var_txt">
                                                 <div class="checkmark">
@@ -95,7 +119,7 @@ if ($up_sell_design) :
                         'selected' => reset($options), // Pass variable
                     ]);
 
-                    echo end($attribute_keys) === $attribute_name ? wp_kses_post(apply_filters('woocommerce_reset_variations_link', '<a class="reset_variations" href="#">' . esc_html__('Clear', 'woocommerce') . '</a>')) : '';
+                    echo end($attribute_keys) === $attribute_name ? wp_kses_post(apply_filters('woocommerce_reset_variations_link', '<a class="reset_variations" href="#">' . esc_html__('Clear', 'mn-wordpress-custom-upsell-products-design') . '</a>')) : '';
                     ?>
                 </div>
             </div>
