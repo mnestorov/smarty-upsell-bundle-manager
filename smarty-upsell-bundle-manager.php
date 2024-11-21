@@ -712,40 +712,44 @@ if (!function_exists('smarty_discount_label_shortcode')) {
     function smarty_discount_label_shortcode() {
         global $product;
 
-        if ( ! $product instanceof WC_Product ) {
+        if (!$product instanceof WC_Product) {
             return ''; // Ensure it's only used in a product loop
         }
 
         // Get plugin settings
         $additional_label_bg_color = get_option('smarty_additional_label_bg_color', '#222222');
         $additional_label_text_color = get_option('smarty_additional_label_text_color', '#ffffff');
-        $additional_label_text = get_option('smarty_additional_label_text', 'some text');
-        $additional_label_number = (int) get_option('smarty_additional_label_number', 14);
+        $additional_label_text = get_option('smarty_additional_label_text', 'Extra Discount');
+        $additional_label_number = (int)get_option('smarty_additional_label_number', 15);
 
         // Initialize prices
         $regular_price = 0;
         $sale_price = 0;
 
         // Check if it's a variable product
-        if ( $product->is_type( 'variable' ) ) {
-            // Get variation prices
-            $prices = $product->get_variation_prices( true ); // Includes sale prices
-            $regular_price = max( $prices['regular_price'] ); // Highest regular price among variations
-            $sale_price = min( $prices['sale_price'] ); // Lowest sale price among variations (if any)
+        if ($product->is_type('variable')) {
+            $variations = $product->get_available_variations();
+
+            if (!empty($variations)) {
+                // Get the first variation
+                $first_variation = reset($variations);
+                $regular_price = (float)$first_variation['display_regular_price'];
+                $sale_price = (float)$first_variation['display_price'];
+            }
         } else {
             // For simple products, use regular and sale price directly
-            $regular_price = (float) $product->get_regular_price();
-            $sale_price = (float) $product->get_sale_price();
+            $regular_price = (float)$product->get_regular_price();
+            $sale_price = (float)$product->get_sale_price();
         }
 
-        // Calculate the current discount percentage
-        $current_discount = 0;
+        // Calculate the discount percentage
+        $discount_percentage = 0;
         if ($regular_price > 0 && $sale_price > 0 && $sale_price < $regular_price) {
-            $current_discount = round((($regular_price - $sale_price) / $regular_price) * 100);
+            $discount_percentage = round((($regular_price - $sale_price) / $regular_price) * 100);
         }
 
-        // Add the extra percentage
-        $total_discount = $current_discount > 0 ? $current_discount + $additional_label_number : $additional_label_number;
+        // If the first variation has no discount, use only the additional discount percentage
+        $total_discount = $discount_percentage > 0 ? $discount_percentage + $additional_label_number : $additional_label_number;
 
         // Generate the label content
         $label_text = "<span class='number' style='background-color:{$additional_label_text_color};color:{$additional_label_bg_color};'>-{$total_discount}%</span>";
