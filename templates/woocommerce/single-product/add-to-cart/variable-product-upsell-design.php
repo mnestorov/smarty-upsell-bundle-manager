@@ -38,7 +38,11 @@ if ($up_sell_design) :
                                 ?>
                                 <label class="check_container has_variations<?= $key_v == 0 ? ' first' : '' ?>">
                                     <span class="main_content">
-                                        <?php echo smarty_po(); ?>
+                                        
+                                        <?php if (smarty_po()) : ?>
+											<?php echo smarty_po_get_variation_label($v); ?>
+										<?php endif; ?>
+
                                         <div class="main_title_wrap" <?php echo smarty_po() ? "style='margin: 0;'" : ''; ?>>
                                             <div class="var_txt">
                                                 <div class="checkmark">
