@@ -1,6 +1,6 @@
 <p align="center"><a href="https://smartystudio.net" target="_blank"><img src="https://smartystudio.net/wp-content/uploads/2023/06/smarty-green-logo-small.png" width="100" alt="SmartyStudio Logo"></a></p>
 
-# Smarty Studio - Custom Upsell Product Design for WooCommerce
+# Smarty Studio - Upsell Bundle Manager for WooCommerce
 
 [![Licence](https://img.shields.io/badge/LICENSE-GPL2.0+-blue)](./LICENSE)
 

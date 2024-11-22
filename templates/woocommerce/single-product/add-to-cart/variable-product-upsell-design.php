@@ -38,32 +38,8 @@ if ($up_sell_design) :
                                 ?>
                                 <label class="check_container has_variations<?= $key_v == 0 ? ' first' : '' ?>">
                                     <span class="main_content">
-										
-										<?php // Additional lables
-										$regular_price = (float) $single_variation->get_regular_price();
-										$sale_price = (float) $single_variation->get_price();
-										$additional_label_bg_color = get_option('smarty_additional_label_bg_color', '#222222');;
-										$additional_label_text_color = get_option('smarty_additional_label_text_color', '#ffffff');
-										$additional_label_text = get_option('smarty_additional_label_text', 'Extra Discount');
-										$default_additional_discount = (int) get_option('smarty_additional_label_number', 15);
-
-										$discount_percentage = 0;
-										if ($regular_price > 0 && $sale_price < $regular_price) {
-											$discount_percentage = round((($regular_price - $sale_price) / $regular_price) * 100);
-										}
-
-										$total_discount = $discount_percentage > 0 ? $discount_percentage + $default_additional_discount : $default_additional_discount; 
-										?>
-										<div class="additional-label-text">
-											<span class="number" style="background-color:<?php echo $additional_label_text_color; ?>; color: <?php echo $additional_label_bg_color; ?>;">
-												-<?php echo $total_discount; ?>%
-											</span>
-											<span class="text" style="background-color:<?php echo $additional_label_bg_color; ?>; color: <?php echo $additional_label_text_color; ?>;">
-												<?php echo $additional_label_text; ?>
-											</span>
-										</div>
-										
-                                        <div class="main_title_wrap">
+                                        <?php echo smarty_po(); ?>
+                                        <div class="main_title_wrap" <?php echo smarty_po() ? "style='margin: 0;'" : ''; ?>>
                                             <div class="var_txt">
                                                 <div class="checkmark">
                                                     <input type="radio" name="radio_attribute_<?= $attribute_name; ?>" value="<?= $attr_slug; ?>" />
