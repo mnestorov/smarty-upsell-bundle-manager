@@ -76,7 +76,8 @@ if (!function_exists('smarty_register_settings')) {
         register_setting('smarty_settings_group', 'smarty_currency_symbol_spacing');
         register_setting('smarty_settings_group', 'smarty_savings_text_size');
         register_setting('smarty_settings_group', 'smarty_savings_text_color');
-        register_setting('smarty_settings_group', 'smarty_image_width');
+        register_setting('smarty_settings_group', 'smarty_d_image_width');
+        register_setting('smarty_settings_group', 'smarty_m_image_width');
         register_setting('smarty_settings_group', 'smarty_image_margin_top');
         register_setting('smarty_settings_group', 'smarty_image_margin_right');
         register_setting('smarty_settings_group', 'smarty_image_border_color');
@@ -118,7 +119,8 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_field('smarty_savings_text_color', 'Savings Text', 'smarty_color_field_cb', 'smarty_settings_page', 'smarty_colors_section', ['id' => 'smarty_savings_text_color']);
 
         // Add settings fields for image sizes
-        add_settings_field('smarty_image_width', 'Image Width (%)', 'smarty_image_percent_size_field_cb', 'smarty_settings_page', 'smarty_image_sizes_section', ['id' => 'smarty_image_width']);
+        add_settings_field('smarty_d_image_width', 'Image Width (Desktop)', 'smarty_image_percent_size_field_cb', 'smarty_settings_page', 'smarty_image_sizes_section', ['id' => 'smarty_d_image_width']);
+        add_settings_field('smarty_m_image_width', 'Image Width (Mobile)', 'smarty_image_percent_size_field_cb', 'smarty_settings_page', 'smarty_image_sizes_section', ['id' => 'smarty_m_image_width']);
         add_settings_field('smarty_image_margin_top', 'Image Margin Top (px)', 'smarty_image_px_size_field_cb', 'smarty_settings_page', 'smarty_image_sizes_section', ['id' => 'smarty_image_margin_top']);
         add_settings_field('smarty_image_margin_right', 'Image Margin Right (px)', 'smarty_image_px_size_field_cb', 'smarty_settings_page', 'smarty_image_sizes_section', ['id' => 'smarty_image_margin_right']);
 
@@ -895,7 +897,8 @@ if (!function_exists('smarty_public_custom_css')) {
         $label_2_font_size = get_option('smarty_label_2_font_size', '14');
         $savings_text_size = get_option('smarty_savings_text_size', '14') . 'px';
         $savings_text_color = get_option('smarty_savings_text_color', '#000000');
-        $image_width = get_option('smarty_image_width', '16');
+        $d_image_width = get_option('smarty_d_image_width', '16');
+        $m_image_width = get_option('smarty_m_image_width', '16');
         $image_margin_top = get_option('smarty_image_margin_top', '18');
         $image_margin_right = get_option('smarty_image_margin_right', '10');
         $image_border_color = get_option('smarty_image_border_color', '#000000');
@@ -958,14 +961,6 @@ if (!function_exists('smarty_public_custom_css')) {
                         position: absolute;
                         top: 27px;
                     }
-
-                    @media only screen and (max-width: 600px) {
-						.main_title_wrap .var_txt {
-							width: 85%;
-							font-size: 15px;
-							line-height: 1.3;
-						}
-					}
                     
                     .upsell-container .variable_content {
                         margin-top: 40px;
@@ -984,7 +979,7 @@ if (!function_exists('smarty_public_custom_css')) {
                     }
                     
                     .upsell-container .variable_img {
-                        width: <?php echo esc_attr($image_width); ?>%;
+                        width: <?php echo esc_attr($d_image_width); ?>%;
                         float: right;
                         margin-top: <?php echo esc_attr($image_margin_top); ?>px;
                         margin-right: <?php echo esc_attr($image_margin_right); ?>px;
@@ -1036,6 +1031,18 @@ if (!function_exists('smarty_public_custom_css')) {
                         padding: 0 18px;
                         background: <?php echo esc_attr($free_delivery_bg_color); ?>;
                     }
+
+                    @media only screen and (max-width: 600px) {
+						.main_title_wrap .var_txt {
+							width: 85%;
+							font-size: 15px;
+							line-height: 1.3;
+						}
+
+                        .upsell-container .variable_img {
+                            width: <?php echo esc_attr($m_image_width); ?>%;
+                        }
+					}
                 </style>
             <?php } ?>
 
@@ -1092,7 +1099,6 @@ if (!function_exists('smarty_public_custom_css')) {
                 .additional-products input[type="checkbox"] {
                     width: 20px;
                     height: 20px;
-                    margin-right: 10px;
                     border-radius: 3px;
                     background-color: rgba(249, 247, 246, 0.9);
                     border: 1px solid <?php echo esc_attr($active_border_color); ?>;
@@ -1120,16 +1126,14 @@ if (!function_exists('smarty_public_custom_css')) {
                 }
 
                 .additional-product-image {
-                    width: 15%;
-    				margin-right: 10px;
-                    border: 1px solid <?php echo esc_attr($image_border_color); ?>;
+                    width: <?php echo esc_attr($d_image_width); ?>%;
+    				border: 1px solid <?php echo esc_attr($image_border_color); ?>;
                     border-radius: 5px;
                 }
 
                 .additional-product-title {
                     margin-right: auto;
                 }
-
 
                 .additional-product-regular-price > .woocommerce-Price-amount.amount bdi {
                     font-size: <?php echo esc_attr($old_price_font_size) . 'px'; ?>;
@@ -1206,6 +1210,12 @@ if (!function_exists('smarty_public_custom_css')) {
 				  	.ribbon {
 				   		display: none;
 					}
+				}
+
+                @media only screen and (max-width: 600px) {
+                    .additional-product-image {
+                        width: <?php echo esc_attr($m_image_width); ?>%;
+                    }
 				}
             </style><?php
         }
