@@ -3,7 +3,7 @@
  * Plugin Name:             SM - Upsell Bundle Manager for WooCommerce
  * Plugin URI:              https://github.com/mnestorov/smarty-upsell-bundle-manager
  * Description:             Designed to change the product variation design for single products in WooCommerce.
- * Version:                 1.0.2
+ * Version:                 1.0.3
  * Author:                  Smarty Studio | Martin Nestorov
  * Author URI:              https://github.com/mnestorov
  * Text Domain:             smarty-upsell-bundle-manager
@@ -18,10 +18,16 @@ if (!defined('WPINC')) {
 	die;
 }
 
-if (!function_exists('smarty_enqueue_scripts')) {
-    function smarty_enqueue_scripts($hook_suffix) {
+if (!function_exists('smarty_ubm_enqueue_scripts')) {
+    /**
+     * Enqueues necessary scripts and styles for the admin settings page.
+     *
+     * @param string $hook_suffix The current admin page hook suffix.
+     * @return void
+     */
+    function smarty_ubm_enqueue_scripts($hook_suffix) {
         // Only add to the admin page of the plugin
-        if ('woocommerce_page_smarty-custom-upsell-settings' !== $hook_suffix) {
+        if ('woocommerce_page_smarty-ubm-settings' !== $hook_suffix) {
             return;
         }
 
@@ -32,25 +38,35 @@ if (!function_exists('smarty_enqueue_scripts')) {
         wp_enqueue_style('wp-color-picker');
         wp_enqueue_script('wp-color-picker');
     }
-    add_action('admin_enqueue_scripts', 'smarty_enqueue_scripts');
+    add_action('admin_enqueue_scripts', 'smarty_ubm_enqueue_scripts');
 }
 
-if (!function_exists('smarty_register_settings_page')) {
-    function smarty_register_settings_page() {
+if (!function_exists('smarty_ubm_register_settings_page')) {
+    /**
+     * Registers a submenu page for plugin settings under WooCommerce.
+     *
+     * @return void
+     */
+    function smarty_ubm_register_settings_page() {
         add_submenu_page(
             'woocommerce',
             __('Upsell Bundle Manager | Settings', 'smarty-upsell-bundle-manager'),
             __('Upsell Bundle Manager', 'smarty-upsell-bundle-manager'),
             'manage_options',
-            'smarty-custom-upsell-settings',
+            'smarty-ubm-settings',
             'smarty_settings_page_content',
         );
     }
-    add_action('admin_menu', 'smarty_register_settings_page');
+    add_action('admin_menu', 'smarty_ubm_register_settings_page');
 }
 
 if (!function_exists('smarty_register_settings')) {
-    function smarty_register_settings() {
+    /**
+     * Registers settings, sections, and fields for the settings page.
+     *
+     * @return void
+     */
+    function smarty_ubm_register_settings() {
         // Register settings
         register_setting('smarty_settings_group', 'smarty_enable_upsell_styling');
         register_setting('smarty_settings_group', 'smarty_enable_additional_products');
@@ -148,28 +164,49 @@ if (!function_exists('smarty_register_settings')) {
         add_settings_field('smarty_debug_mode', 'Debug Mode', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_settings_section', ['id' => 'smarty_debug_mode']);
         add_settings_field('smarty_debug_notices_enabled', 'Enable Debug Notices', 'smarty_checkbox_field_cb', 'smarty_settings_page', 'smarty_settings_section', ['id' => 'smarty_debug_notices_enabled', 'label_for' => 'smarty_debug_notices_enabled']);
     }
-    add_action('admin_init', 'smarty_register_settings');
+    add_action('admin_init', 'smarty_ubm_register_settings');
 }
 
 if (!function_exists('smarty_upsell_styling_section_cb')) {
+    /**
+     * Callback for the upsell styling settings section description.
+     *
+     * @return void
+     */
     function smarty_upsell_styling_section_cb() {
         echo '<p>Enable or disable variation styling of the variable products.</p>';
     }
 }
 
 if (!function_exists('smarty_additional_products_section_cb')) {
+    /**
+     * Callback for the additional products settings section description.
+     *
+     * @return void
+     */
     function smarty_additional_products_section_cb() {
         echo '<p>Enable or disable additional products feature for single or variable products or/and choose your additional products.</p>';
     }
 }
 
 if (!function_exists('smarty_colors_section_cb')) {
+    /**
+     * Callback for the colors settings section description.
+     *
+     * @return void
+     */
     function smarty_colors_section_cb() {
         echo '<p>Customize the colors for various elements in your WooCommerce upsell products.</p>';
     }
 }
 
 if (!function_exists('smarty_checkbox_field_cb')) {
+    /**
+     * Renders a checkbox field for the settings page.
+     *
+     * @param array $args Arguments for rendering the checkbox.
+     * @return void
+     */
     function smarty_checkbox_field_cb($args) {
         $option = get_option($args['id'], '0'); // Default to unchecked
         $checked = checked(1, $option, false);
@@ -189,6 +226,12 @@ if (!function_exists('smarty_checkbox_field_cb')) {
 }
 
 if (!function_exists('smarty_color_field_cb')) {
+    /**
+     * Renders a color picker field for the settings page.
+     *
+     * @param array $args Arguments for rendering the color picker.
+     * @return void
+     */
     function smarty_color_field_cb($args) {
         $option = get_option($args['id'], '');
         echo '<input type="text" name="' . $args['id'] . '" value="' . esc_attr($option) . '" class="smarty-color-field" data-default-color="' . esc_attr($option) . '" />';
@@ -199,12 +242,23 @@ if (!function_exists('smarty_color_field_cb')) {
 }
 
 if (!function_exists('smarty_font_sizes_section_cb')) {
+    /**
+     * Callback for the font sizes settings section description.
+     *
+     * @return void
+     */
     function smarty_font_sizes_section_cb() {
         echo '<p>Customize the font sizes for various elements in your WooCommerce upsell products.</p>';
     }
 }
 
 if (!function_exists('smarty_font_size_field_cb')) {
+    /**
+     * Renders a font size field as a slider for the settings page.
+     *
+     * @param array $args Arguments for rendering the font size slider.
+     * @return void
+     */
     function smarty_font_size_field_cb($args) {
         $option = get_option($args['id'], '14');
         echo '<input type="range" name="' . $args['id'] . '" min="10" max="30" value="' . esc_attr($option) . '" class="smarty-font-size-slider" />';
@@ -213,12 +267,23 @@ if (!function_exists('smarty_font_size_field_cb')) {
 }
 
 if (!function_exists('smarty_image_sizes_section_cb')) {
+    /**
+     * Callback for the image sizes settings section description.
+     *
+     * @return void
+     */
     function smarty_image_sizes_section_cb() {
         echo '<p>Customize the sizes for images in your WooCommerce upsell products.</p>';
     }
 }
 
 if (!function_exists('smarty_image_percent_size_field_cb')) {
+    /**
+     * Renders an image size field (percentage) as a slider for the settings page.
+     *
+     * @param array $args Arguments for rendering the slider.
+     * @return void
+     */
     function smarty_image_percent_size_field_cb($args) {
         $option = get_option($args['id'], '14');
         echo '<input type="range" name="' . $args['id'] . '" min="10" max="30" value="' . esc_attr($option) . '" class="smarty-image-percent-size-slider" />';
@@ -227,6 +292,12 @@ if (!function_exists('smarty_image_percent_size_field_cb')) {
 }
 
 if (!function_exists('smarty_image_px_size_field_cb')) {
+     /**
+     * Renders an image size field (pixels)as a number for the settings page.
+     *
+     * @param array $args Arguments for rendering the slider.
+     * @return void
+     */
     function smarty_image_px_size_field_cb($args) {
         $option = get_option($args['id'], '14');
         echo '<input type="range" name="' . $args['id'] . '" min="10" max="30" value="' . esc_attr($option) . '" class="smarty-image-px-size-slider" />';
@@ -235,12 +306,23 @@ if (!function_exists('smarty_image_px_size_field_cb')) {
 }
 
 if (!function_exists('smarty_free_delivery_section_cb')) {
+    /**
+     * Callback for the free delivery settings section description.
+     *
+     * @return void
+     */
     function smarty_free_delivery_section_cb() {
         echo '<p>Use custom text and set the amount for free delivery.</p>';
     }
 }
 
 if (!function_exists('smarty_text_field_cb')) {
+    /**
+     * Renders a text field for the settings page.
+     *
+     * @param array $args Arguments for rendering the text field.
+     * @return void
+     */
     function smarty_text_field_cb($args) {
         $option = get_option($args['id'], ''); // Default is empty
         echo '<input type="text" name="' . $args['id'] . '" value="' . esc_attr($option) . '" />';
@@ -249,6 +331,11 @@ if (!function_exists('smarty_text_field_cb')) {
 }
 
 if (!function_exists('smarty_number_field_cb')) {
+    /**
+     * Renders a number field for the settings page.
+     *
+     * @return void
+     */
     function smarty_number_field_cb() {
         $option = get_option('smarty_free_delivery_amount', '100'); // Default to 100
         echo '<input type="number" step="0.01" name="smarty_free_delivery_amount" value="' . esc_attr($option) . '" />';
@@ -257,12 +344,24 @@ if (!function_exists('smarty_number_field_cb')) {
 }
 
 if (!function_exists('smarty_currency_section_cb')) {
+    /**
+     * Callback for the currency section description.
+     *
+     * @return void
+     */
     function smarty_currency_section_cb() {
         echo '<p>Customize the currency symbol position and spacing for your WooCommerce upsell products.</p>';
     }
 }
 
 if (!function_exists('smarty_choose_additional_products_field_cb')) {
+    /**
+     * Renders a dropdown field for selecting additional products for upsell.
+     *
+     * This function uses Select2 for enhanced UI and allows selecting multiple products.
+     *
+     * @return void
+     */
     function smarty_choose_additional_products_field_cb() {
         $saved_products = get_option('smarty_choose_additional_products', []);
         $saved_products = is_array($saved_products) ? $saved_products : [];
@@ -289,6 +388,12 @@ if (!function_exists('smarty_choose_additional_products_field_cb')) {
 }
 
 if (!function_exists('smarty_currency_position_field_cb')) {
+    /**
+     * Renders a dropdown for currency position on the settings page.
+     *
+     * @param array $args Arguments for rendering the dropdown.
+     * @return void
+     */
     function smarty_currency_position_field_cb($args) {
         $option = get_option($args['id'], 'left');
         echo '<select name="' . $args['id'] . '">';
@@ -299,6 +404,12 @@ if (!function_exists('smarty_currency_position_field_cb')) {
 }
 
 if (!function_exists('smarty_currency_spacing_field_cb')) {
+    /**
+     * Renders a dropdown for currency spacing on the settings page.
+     *
+     * @param array $args Arguments for rendering the dropdown.
+     * @return void
+     */
     function smarty_currency_spacing_field_cb($args) {
         $option = get_option($args['id'], 'no_space');
         echo '<select name="' . $args['id'] . '">';
@@ -309,18 +420,34 @@ if (!function_exists('smarty_currency_spacing_field_cb')) {
 }
 
 if (!function_exists('smarty_display_options_section_cb')) {
+    /**
+     * Callback for the display options section description.
+     *
+     * @return void
+     */
     function smarty_display_options_section_cb() {
         echo '<p>Display options for the plugin.</p>';
     }
 }
 
 if (!function_exists('smarty_settings_section_cb')) {
+    /**
+     * Callback for the debug settings section description.
+     *
+     * @return void
+     */
     function smarty_settings_section_cb() {
         echo '<p>Adjust debug settings for the plugin.</p>';
     }
 }
 
 if (!function_exists('smarty_checkbox_field_cb')) {
+    /**
+     * Renders a checkbox field with a custom toggle switch design for the settings page.
+     *
+     * @param array $args Arguments for rendering the checkbox.
+     * @return void
+     */
     function smarty_checkbox_field_cb($args) {
         $option = get_option($args['id'], '');
         $checked = checked(1, $option, false);
@@ -336,6 +463,11 @@ if (!function_exists('smarty_checkbox_field_cb')) {
 }
 
 if (!function_exists('smarty_settings_page_content')) {
+    /**
+     * Outputs the content for the settings page.
+     *
+     * @return void
+     */
     function smarty_settings_page_content() {
         ?>
        <div class="wrap">
@@ -415,7 +547,7 @@ if (!function_exists('smarty_copy_files_to_child_theme')) {
         }
     
         // Check if we are on the correct admin page
-        if ($pagenow == 'admin.php' && isset($_GET['page']) && $_GET['page'] == 'smarty-custom-upsell-settings') {
+        if ($pagenow == 'admin.php' && isset($_GET['page']) && $_GET['page'] == 'smarty-ubm-settings') {
             
             // Retrieve debug setting
             $debug = get_option('smarty_debug_mode', false);
@@ -609,23 +741,33 @@ if (!function_exists('smarty_woocommerce_available_variation')) {
     add_filter( 'woocommerce_available_variation', 'smarty_woocommerce_available_variation', 10, 3 );
 }
 
-function smarty_check_variation_free_delivery($variation_data, $product, $variation) {
-    // Get the free delivery threshold
-    $minimum_free_delivery_amount = smarty_free_delivery_amount();
+if (!function_exists('smarty_check_variation_free_delivery')) {
+    /**
+     * Checks if a variation qualifies for free delivery.
+     *
+     * @param array $variation_data Variation data array.
+     * @param WC_Product $product WooCommerce product object.
+     * @param WC_Product_Variation $variation WooCommerce variation object.
+     * @return array Modified variation data array.
+     */
+    function smarty_check_variation_free_delivery($variation_data, $product, $variation) {
+        // Get the free delivery threshold
+        $minimum_free_delivery_amount = smarty_free_delivery_amount();
 
-    // Get the variation price
-    $variation_price = $variation->get_price();
+        // Get the variation price
+        $variation_price = $variation->get_price();
 
-    // Determine if the variation qualifies for free delivery
-    if ($variation_price >= $minimum_free_delivery_amount) {
-        $variation_data['free_delivery'] = true;
-    } else {
-        $variation_data['free_delivery'] = false;
+        // Determine if the variation qualifies for free delivery
+        if ($variation_price >= $minimum_free_delivery_amount) {
+            $variation_data['free_delivery'] = true;
+        } else {
+            $variation_data['free_delivery'] = false;
+        }
+
+        return $variation_data;
     }
-
-    return $variation_data;
+    add_filter('woocommerce_available_variation', 'smarty_check_variation_free_delivery', 10, 3);
 }
-add_filter('woocommerce_available_variation', 'smarty_check_variation_free_delivery', 10, 3);
 
 if (!function_exists('smarty_free_delivery_amount')) {
     /**
@@ -678,8 +820,12 @@ register_activation_hook(__FILE__, function() {
 
 if (!function_exists('smarty_add_custom_fields_to_variations')) {
     /**
-     * This function adds two custom text input fields to WooCommerce 
-     * product variation forms in the admin panel. 
+     * Adds custom fields to WooCommerce variation forms in the admin panel.
+     *
+     * @param int $loop Loop index.
+     * @param array $variation_data Data of the current variation.
+     * @param WP_Post $variation Current variation object.
+     * @return void
      */
     function smarty_add_custom_fields_to_variations($loop, $variation_data, $variation) {
         // Custom field for Label 1
@@ -707,8 +853,14 @@ if (!function_exists('smarty_add_custom_fields_to_variations')) {
 
 if (!function_exists('smarty_save_custom_fields_variations')) {
     /**
+     * Saves custom fields for WooCommerce product variations.
+     * 
      * This function handles the saving of data entered into the custom fields 
      * ('Label 1' and 'Label 2') for each product variation.
+     *
+     * @param int $variation_id Variation ID.
+     * @param int $i Loop index.
+     * @return void
      */
     function smarty_save_custom_fields_variations($variation_id, $i) {
         // Save Best Seller Label
@@ -725,6 +877,11 @@ if (!function_exists('smarty_save_custom_fields_variations')) {
 }
 
 if (!function_exists('smarty_admin_custom_css')) {
+    /**
+     * Adds custom CSS for the admin panel.
+     *
+     * @return void
+     */
     function smarty_admin_custom_css() { 
         if (is_admin()) { ?>
             <style>
@@ -1587,7 +1744,10 @@ if (!function_exists('smarty_additional_products_data_fields')) {
 
 if (!function_exists('smarty_save_custom_order_ids_field')) {
     /**
-     * Function to save the field.
+     * Adds custom meta data for order IDs to the WooCommerce product meta.
+     *
+     * @param int $post_id The product post ID.
+     * @return void
      */
     function smarty_save_custom_order_ids_field($post_id) {
         $order_ids = isset($_POST['_smarty_order_ids']) ? sanitize_text_field($_POST['_smarty_order_ids']) : '';
@@ -1596,6 +1756,12 @@ if (!function_exists('smarty_save_custom_order_ids_field')) {
 }
 
 if (!function_exists('smarty_add_additional_products_tab')) {
+    /**
+     * Adds a custom tab for additional products in the WooCommerce product data meta box.
+     *
+     * @param array $tabs The existing product data tabs.
+     * @return array Modified product data tabs array including the additional products tab.
+     */
     function smarty_add_additional_products_tab($tabs) {
         $tabs['smarty_additional_products'] = array(
             'label'    => __('Additional Products', 'smarty-upsell-bundle-manager'),
@@ -1608,6 +1774,13 @@ if (!function_exists('smarty_add_additional_products_tab')) {
 }
 
 if (!function_exists('smarty_add_additional_products_checkbox')) {
+    /**
+     * Displays checkboxes for selecting additional products on the single product page.
+     *
+     * Fetches and displays available additional products as options for the current product.
+     *
+     * @return void
+     */
     function smarty_add_additional_products_checkbox() {
             
         global $product;
@@ -1734,6 +1907,13 @@ if (!function_exists('smarty_add_additional_products_checkbox')) {
 }
 
 if (!function_exists('smarty_handle_additional_products_cart')) {
+    /**
+     * Handles the addition of additional products to the WooCommerce cart via AJAX.
+     *
+     * Processes and adds additional products selected by the user to the cart.
+     *
+     * @return void
+     */
     function smarty_handle_additional_products_cart() {
         // Start session if not already started
         if (!session_id()) {
@@ -1771,6 +1951,14 @@ if (!function_exists('smarty_handle_additional_products_cart')) {
 }
     
 if (!function_exists('smarty_add_cart_item_data')) {
+    /**
+     * Adds additional product data to the WooCommerce cart item data.
+     *
+     * @param array $cart_item_data Current cart item data.
+     * @param int $product_id The product ID.
+     * @param int $variation_id The variation ID.
+     * @return array Modified cart item data including additional products.
+     */
     function smarty_add_cart_item_data($cart_item_data, $product_id, $variation_id) {
         if (isset($_POST['additional_products']) && is_array($_POST['additional_products'])) {
             $cart_item_data['additional_products'] = array_map('intval', $_POST['additional_products']);
@@ -1780,6 +1968,13 @@ if (!function_exists('smarty_add_cart_item_data')) {
 }
     
 if (!function_exists('smarty_get_cart_item_from_session')) {
+    /**
+     * Retrieves additional product data from the WooCommerce cart session.
+     *
+     * @param array $cart_item Current cart item data.
+     * @param array $values Session-stored cart item data.
+     * @return array Modified cart item including additional products.
+     */
     function smarty_get_cart_item_from_session($cart_item, $values) {
         if (isset($values['additional_products'])) {
             $cart_item['additional_products'] = $values['additional_products'];
@@ -1789,6 +1984,14 @@ if (!function_exists('smarty_get_cart_item_from_session')) {
 }
     
 if (!function_exists('smarty_calculate_cart_item_price')) {
+    /**
+     * Calculates the total price for cart items, including additional products.
+     *
+     * Updates the cart item's price to reflect the cost of associated additional products.
+     *
+     * @param WC_Cart $cart_object The WooCommerce cart object.
+     * @return void
+     */
     function smarty_calculate_cart_item_price($cart_object) {
         foreach ($cart_object->get_cart() as $cart_item) {
             if (isset($cart_item['additional_products']) && is_array($cart_item['additional_products'])) {
@@ -1851,6 +2054,16 @@ if (!function_exists('smarty_additional_product_recalculate_price')) {
 }
     
 if (!function_exists('smarty_display_additional_products_in_cart')) {
+    /**
+     * Displays additional products in the cart meta information.
+     *
+     * Adds a list of bundled products to the cart item's meta information, showing 
+     * the product names and prices in the cart and checkout pages.
+     *
+     * @param array $item_data The current item data array.
+     * @param array $cart_item The cart item array.
+     * @return array Modified item data array including additional products.
+     */
     function smarty_display_additional_products_in_cart($item_data, $cart_item) {
         if (isset($cart_item['additional_products']) && is_array($cart_item['additional_products'])) {
             $additional_products_list = '<ul style="list-style-type: none !important; padding: 0 5px;">'; // Start an unstyled list
@@ -1875,6 +2088,17 @@ if (!function_exists('smarty_display_additional_products_in_cart')) {
 }
     
 if (!function_exists('smarty_add_order_item_meta')) {
+    /**
+     * Adds additional products as meta data to WooCommerce order items.
+     *
+     * Includes additional products' SKUs as hidden meta keys for better visibility
+     * and data management in WooCommerce orders.
+     *
+     * @param int $item_id Order item ID.
+     * @param array $values Cart item values.
+     * @param string $cart_item_key Cart item key.
+     * @return void
+     */
     function smarty_add_order_item_meta($item_id, $values, $cart_item_key) {
         if (isset($values['additional_products']) && is_array($values['additional_products'])) {
             wc_add_order_item_meta($item_id, '_additional_products', $values['additional_products']);
@@ -1895,6 +2119,12 @@ if (!function_exists('smarty_add_order_item_meta')) {
 }
 
 if (!function_exists('smarty_hide_additional_product_skus')) {
+    /**
+     * Hides additional product SKUs from being displayed in the WooCommerce admin meta section.
+     *
+     * @param array $hidden_meta_keys Existing hidden meta keys.
+     * @return array Modified hidden meta keys array.
+     */
     function smarty_hide_additional_product_skus($hidden_meta_keys) {
         global $wpdb;
 
@@ -1906,6 +2136,16 @@ if (!function_exists('smarty_hide_additional_product_skus')) {
 }
     
 if (!function_exists('smarty_display_additional_products_order_meta')) {
+    /**
+     * Displays additional products in order meta details for WooCommerce orders.
+     *
+     * Shows the additional products associated with an order in the order details section.
+     *
+     * @param int $item_id Order item ID.
+     * @param WC_Order_Item $item WooCommerce order item object.
+     * @param WC_Order $order WooCommerce order object.
+     * @return void
+     */
     function smarty_display_additional_products_order_meta($item_id, $item, $order) {
         $additional_products = wc_get_order_item_meta($item_id, '_additional_products', true);
         //error_log('Additional Products: ' . print_r($additional_products, true)); // Debug log
@@ -1941,6 +2181,12 @@ if (!function_exists('smarty_display_additional_products_order_meta')) {
 }
 
 if (!function_exists('smarty_add_order_list_column')) {
+    /**
+     * Adds a custom column to the WooCommerce orders list for indicating bundled orders.
+     *
+     * @param array $columns Existing columns in the orders list.
+     * @return array Modified columns array including the new "is_bundle" column.
+     */
     function smarty_add_order_list_column($columns) {
         $new_columns = array();
     
@@ -1956,6 +2202,13 @@ if (!function_exists('smarty_add_order_list_column')) {
 }
 
 if (!function_exists('smarty_add_order_list_column_content')) {
+    /**
+     * Adds content to the custom "is_bundle" column in the WooCommerce orders list.
+     *
+     * @param string $column The column name.
+     * @param int $post_id The ID of the current order.
+     * @return void
+     */
     function smarty_add_order_list_column_content($column, $post_id) {
         if ('is_bundle' === $column) {
             $order = wc_get_order($post_id);
@@ -1980,6 +2233,12 @@ if (!function_exists('smarty_add_order_list_column_content')) {
 }
 
 if (!function_exists('smarty_choose_additional_products_for_product_cb')) {
+    /**
+     * Displays a dropdown for choosing additional products for a specific product in the admin panel.
+     *
+     * @param WP_Post $post The current product post object.
+     * @return void
+     */
     function smarty_choose_additional_products_for_product_cb($post) {
         $product_additional_products = get_post_meta($post->ID, '_smarty_additional_products', true);
         $product_additional_products = is_array($product_additional_products) ? $product_additional_products : [];
@@ -2006,6 +2265,12 @@ if (!function_exists('smarty_choose_additional_products_for_product_cb')) {
 }
 
 if (!function_exists('smarty_save_additional_products_for_product')) {
+    /**
+     * Saves the selected additional products for a specific product in the admin panel.
+     *
+     * @param int $post_id The product post ID.
+     * @return void
+     */
     function smarty_save_additional_products_for_product($post_id) {
         if (isset($_POST['smarty_additional_products']) && !empty($_POST['smarty_additional_products'])) {
             $additional_products = array_map('intval', $_POST['smarty_additional_products']);
