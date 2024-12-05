@@ -192,6 +192,9 @@ if (!function_exists('smarty_color_field_cb')) {
     function smarty_color_field_cb($args) {
         $option = get_option($args['id'], '');
         echo '<input type="text" name="' . $args['id'] . '" value="' . esc_attr($option) . '" class="smarty-color-field" data-default-color="' . esc_attr($option) . '" />';
+        if (in_array($args['id'], ['smarty_label_1_bg_color', 'smarty_label_1_color', 'smarty_label_2_bg_color', 'smarty_label_2_color'])) {
+            echo '<p class="description">' . __('This field is available under the Product Edit page > Variable product > Variations tab > Edit Variation.', 'smarty-upsell-bundle-manager') . '</p>';
+        }
     }
 }
 
@@ -270,7 +273,8 @@ if (!function_exists('smarty_choose_additional_products_field_cb')) {
             $selected = in_array($product->get_id(), $saved_products) ? 'selected' : '';
             echo '<option value="' . esc_attr($product->get_id()) . '" ' . esc_attr($selected) . '>' . esc_html($product->get_name()) . '</option>';
         }
-        echo '</select>'; ?>
+        echo '</select>';
+        echo '<p class="description">' . __('These products will appear as global upsell options. To assign specific upsell products to individual products, use the Product Edit page under the Additional Products tab.', 'smarty-upsell-bundle-manager') . '</p>'; ?>
 
         <script>
             jQuery(document).ready(function($) {
