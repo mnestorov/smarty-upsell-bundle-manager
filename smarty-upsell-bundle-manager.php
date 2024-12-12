@@ -1290,6 +1290,7 @@ if (!function_exists('smarty_public_custom_css')) {
                     width: <?php echo esc_attr($d_image_width); ?>%;
     				border: 1px solid <?php echo esc_attr($image_border_color); ?>;
                     border-radius: 5px;
+                    margin-right: 10px;
                 }
 
                 .additional-product-title {
