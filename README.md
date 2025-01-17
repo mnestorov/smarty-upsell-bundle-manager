@@ -1,16 +1,10 @@
-<p align="center"><a href="https://smartystudio.net" target="_blank"><img src="https://smartystudio.net/wp-content/uploads/2023/06/smarty-green-logo-small.png" width="100" alt="SmartyStudio Logo"></a></p>
-
-# Smarty Studio - Upsell Bundle Manager for WooCommerce
+# SM - Upsell Bundle Manager for WooCommerce
 
 [![Licence](https://img.shields.io/badge/LICENSE-GPL2.0+-blue)](./LICENSE)
 
-- Developed by: [Smarty Studio](https://smartystudio.net) | [Martin Nestorov](https://github.com/mnestorov)
-- Plugin URI: https://github.com/mnestorov/smarty-upsell-bundle-manager
-
-## Support The Project
-
-Your support is greatly appreciated and will help ensure all of the projects continued development and improvement. Thank you for being a part of the community!
-You can send me money on Revolut by following this link: https://revolut.me/mnestorovv
+- **Developed by:** Martin Nestorov 
+    - Founder and Lead Developer at [Smarty Studio](https://smartystudio.net) | Explore more at [nestorov.dev](https://github.com/mnestorov)
+- **Plugin URI:** https://github.com/mnestorov/smarty-google-feed-generator
 
 ## Overview
 
@@ -57,6 +51,10 @@ This plugin is translation-ready, and translations can be added to the `language
 
 For a detailed list of changes and updates made to this project, please refer to our [Changelog](./CHANGELOG.md).
 
+## Contributing
+
+Contributions are welcome. Please follow the WordPress coding standards and submit pull requests for any enhancements.
+
 ## Support The Project
 
 If you find this script helpful and would like to support its development and maintenance, please consider the following options:
@@ -72,7 +70,7 @@ If you find this script helpful and would like to support its development and ma
 - **_Donate_**: Show your appreciation with a small donation. Your support will help me maintain and enhance the script. Every little bit helps, and your donation will make a big difference in my ability to keep this project alive and thriving.
 
 Your support is greatly appreciated and will help ensure all of the projects continued development and improvement. Thank you for being a part of the community!
-You can send me money on Revolut by following this link: https://revolut.me/mnestorovv
+You can send me money on Revolut by following this link: **https://revolut.me/mnestorovv**
 
 ---
 

@@ -3,8 +3,8 @@
  * Plugin Name:             SM - Upsell Bundle Manager for WooCommerce
  * Plugin URI:              https://github.com/mnestorov/smarty-upsell-bundle-manager
  * Description:             Designed to change the product variation design for single products in WooCommerce.
- * Version:                 1.0.3
- * Author:                  Smarty Studio | Martin Nestorov
+ * Version:                 1.0.4
+ * Author:                  Martin Nestorov
  * Author URI:              https://github.com/mnestorov
  * Text Domain:             smarty-upsell-bundle-manager
  * Domain Path:             /languages/
@@ -25,7 +25,7 @@ if (!function_exists('smarty_ubm_enqueue_scripts')) {
      * @param string $hook_suffix The current admin page hook suffix.
      * @return void
      */
-    function smarty_ubm_enqueue_scripts($hook_suffix) {
+    function smarty_ubm_enqueue_admin_scripts($hook_suffix) {
         // Only add to the admin page of the plugin
         if ('woocommerce_page_smarty-ubm-settings' !== $hook_suffix) {
             return;
@@ -33,12 +33,24 @@ if (!function_exists('smarty_ubm_enqueue_scripts')) {
 
         wp_enqueue_style('select2-css', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css');
         wp_enqueue_script('select2-js', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js', array('jquery'), '4.0.13', true);
+        wp_enqueue_script('smarty-ubm-admin-js', plugin_dir_url(__FILE__) . 'js/smarty-ubm-admin.js', array('jquery', 'select2'), '1.0.0', true);
+        wp_enqueue_style('smarty-ubm-admin-css', plugin_dir_url(__FILE__) . 'css/smarty-ubm-admin.css', array(), '1.0.0');
 
         // Enqueue style and script for using the WordPress color picker.
         wp_enqueue_style('wp-color-picker');
         wp_enqueue_script('wp-color-picker');
+
+        wp_localize_script(
+            'smarty-ubm-admin-js',
+            'smartyUpsellBundleManager',
+            array(
+                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'siteUrl' => site_url(),
+                'nonce'   => wp_create_nonce('smarty_upsell_bundle_nonce'),
+            )
+        );
     }
-    add_action('admin_enqueue_scripts', 'smarty_ubm_enqueue_scripts');
+    add_action('admin_enqueue_scripts', 'smarty_ubm_enqueue_admin_scripts');
 }
 
 if (!function_exists('smarty_ubm_register_settings_page')) {
@@ -472,13 +484,43 @@ if (!function_exists('smarty_settings_page_content')) {
         ?>
        <div class="wrap">
             <h1><?php _e('Upsell Bundle Manager | Settings', 'smarty-upsell-bundle-manager'); ?></h1>
-            <form method="post" action="options.php">
-                <?php
-                settings_fields('smarty_settings_group');
-                do_settings_sections('smarty_settings_page');
-                ?>
-                <?php submit_button(); ?>
-            </form>
+            <div id="smarty-ubm-settings-container">
+                <div>
+                    <form method="post" action="options.php">
+                        <?php
+                        settings_fields('smarty_settings_group');
+                        do_settings_sections('smarty_settings_page');
+                        ?>
+                        <?php submit_button(); ?>
+                    </form>
+                </div>
+                <div id="smarty-ubm-tabs-container">
+                    <div>
+                        <h2 class="smarty-ubm-nav-tab-wrapper">
+                            <a href="#smarty-ubm-documentation" class="smarty-ubm-nav-tab smarty-ubm-nav-tab-active"><?php esc_html_e('Documentation', 'smarty-upsell-bundle-manager'); ?></a>
+                            <a href="#smarty-ubm-changelog" class="smarty-ubm-nav-tab"><?php esc_html_e('Changelog', 'smarty-upsell-bundle-manager'); ?></a>
+                        </h2>
+                        <div id="smarty-ubm-documentation" class="smarty-ubm-tab-content active">
+                            <div class="smarty-ubm-view-more-container">
+                                <p><?php esc_html_e('Click "View More" to load the plugin documentation.', 'smarty-upsell-bundle-manager'); ?></p>
+                                <button id="smarty-ubm-load-readme-btn" class="button button-primary">
+                                    <?php esc_html_e('View More', 'smarty-upsell-bundle-manager'); ?>
+                                </button>
+                            </div>
+                            <div id="smarty-ubm-readme-content" style="margin-top: 20px;"></div>
+                        </div>
+                        <div id="smarty-ubm-changelog" class="smarty-ubm-tab-content">
+                            <div class="smarty-ubm-view-more-container">
+                                <p><?php esc_html_e('Click "View More" to load the plugin changelog.', 'smarty-upsell-bundle-manager'); ?></p>
+                                <button id="smarty-ubm-load-changelog-btn" class="button button-primary">
+                                    <?php esc_html_e('View More', 'smarty-upsell-bundle-manager'); ?>
+                                </button>
+                            </div>
+                            <div id="smarty-ubm-changelog-content" style="margin-top: 20px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <style>
             .wp-color-result { vertical-align: middle; }
@@ -508,6 +550,68 @@ if (!function_exists('smarty_settings_page_content')) {
         </script>
         <?php
     }
+}
+
+if (!function_exists('smarty_ubm_load_readme')) {
+    /**
+     * AJAX handler to load and parse the README.md content.
+     */
+    function smarty_ubm_load_readme() {
+        check_ajax_referer('smarty_upsell_bundle_nonce', 'nonce');
+    
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('You do not have sufficient permissions.');
+        }
+    
+        $readme_path = plugin_dir_path(__FILE__) . 'README.md';
+        if (file_exists($readme_path)) {
+            // Include Parsedown library
+            if (!class_exists('Parsedown')) {
+                require_once plugin_dir_path(__FILE__) . 'libs/Parsedown.php';
+            }
+    
+            $parsedown = new Parsedown();
+            $markdown_content = file_get_contents($readme_path);
+            $html_content = $parsedown->text($markdown_content);
+    
+            // Remove <img> tags from the content
+            $html_content = preg_replace('/<img[^>]*>/', '', $html_content);
+    
+            wp_send_json_success($html_content);
+        } else {
+            wp_send_json_error('README.md file not found.');
+        }
+    }    
+    add_action('wp_ajax_smarty_ubm_load_readme', 'smarty_ubm_load_readme');
+}
+
+if (!function_exists('smarty_ubm_load_changelog')) {
+    /**
+     * AJAX handler to load and parse the CHANGELOG.md content.
+     */
+    function smarty_ubm_load_changelog() {
+        check_ajax_referer('smarty_upsell_bundle_nonce', 'nonce');
+    
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('You do not have sufficient permissions.');
+        }
+    
+        $changelog_path = plugin_dir_path(__FILE__) . 'CHANGELOG.md';
+        if (file_exists($changelog_path)) {
+            if (!class_exists('Parsedown')) {
+                require_once plugin_dir_path(__FILE__) . 'libs/Parsedown.php';
+            }
+    
+            $parsedown = new Parsedown();
+            $markdown_content = file_get_contents($changelog_path);
+            $html_content = $parsedown->text($markdown_content);
+    
+            wp_send_json_success($html_content);
+        } else {
+            wp_send_json_error('CHANGELOG.md file not found.');
+        }
+    }
+    add_action('wp_ajax_smarty_ubm_load_changelog', 'smarty_ubm_load_changelog');
 }
 
 if (!function_exists('smarty_copy_files_to_child_theme')) {
