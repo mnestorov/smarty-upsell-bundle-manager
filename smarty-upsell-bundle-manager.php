@@ -3,13 +3,13 @@
  * Plugin Name:             SM - Upsell Bundle Manager for WooCommerce
  * Plugin URI:              https://github.com/mnestorov/smarty-upsell-bundle-manager
  * Description:             Designed to change the product variation design for single products in WooCommerce.
- * Version:                 1.0.4
+ * Version:                 1.0.5
  * Author:                  Martin Nestorov
  * Author URI:              https://github.com/mnestorov
  * Text Domain:             smarty-upsell-bundle-manager
  * Domain Path:             /languages/
  * WC requires at least:    3.5.0
- * WC tested up to:         9.4.1
+ * WC tested up to:         9.6.0
  * Requires Plugins:        woocommerce
  */
 
@@ -17,6 +17,28 @@
 if (!defined('WPINC')) {
 	die;
 }
+
+/**
+ * HPOS Compatibility Declaration.
+ *
+ * This ensures that the plugin explicitly declares compatibility with 
+ * WooCommerce's High-Performance Order Storage (HPOS).
+ * 
+ * HPOS replaces the traditional `wp_posts` and `wp_postmeta` storage system 
+ * for orders with a dedicated database table structure, improving scalability 
+ * and performance.
+ * 
+ * More details:
+ * - WooCommerce HPOS Documentation: 
+ *   https://developer.woocommerce.com/2022/09/12/high-performance-order-storage-in-woocommerce/
+ * - Declaring Plugin Compatibility: 
+ *   https://github.com/woocommerce/woocommerce/wiki/High-Performance-Order-Storage-Upgrade-Recipe-Book#how-to-declare-compatibility
+ */
+add_action('before_woocommerce_init', function() {
+    if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+    }
+});
 
 if (!function_exists('smarty_ubm_enqueue_scripts')) {
     /**
@@ -757,7 +779,7 @@ if (!function_exists('smarty_after_edit_attribute_fields')) {
 
 if (!function_exists('smarty_woocommerce_attribute_updated')) {
     /**
-     * Handles saving of the custom attribute fields on update.
+     * Handles saving of the custom attribute fields on update (HPOS compatible).
      *
      * @param int $attribute_id ID of the attribute being updated.
      * @param array $attribute Array of new attribute data.
@@ -766,9 +788,9 @@ if (!function_exists('smarty_woocommerce_attribute_updated')) {
      */
     function smarty_woocommerce_attribute_updated($attribute_id, $attribute, $old_attribute_name) {
         if (isset($_POST['up_sell_design']) && $_POST['up_sell_design'] == 1) {
-            update_option('up_sell_design_'. $attribute_id, 1);
+            update_term_meta($attribute_id, '_up_sell_design', 1);
         } else {
-            update_option('up_sell_design_'. $attribute_id, 0);
+            update_term_meta($attribute_id, '_up_sell_design', 0);
         }
     }
     add_action('woocommerce_attribute_updated', 'smarty_woocommerce_attribute_updated', 10, 3);
@@ -932,23 +954,27 @@ if (!function_exists('smarty_add_custom_fields_to_variations')) {
      * @return void
      */
     function smarty_add_custom_fields_to_variations($loop, $variation_data, $variation) {
+        $product_variation = wc_get_product($variation->ID); // Use WooCommerce CRUD
+
         // Custom field for Label 1
         woocommerce_wp_text_input(array(
-            'id' => 'smarty_label_1[' . $variation->ID . ']', 
+            'id' => 'smarty_label_1_' . $variation->ID,
+            'name' => 'smarty_label_1[' . $variation->ID . ']',
             'label' => __('Label 1', 'smarty-upsell-bundle-manager'), 
             'description' => __('Enter the label for example: `Best Seller`', 'smarty-upsell-bundle-manager'),
             'desc_tip' => true,
-            'value' => get_post_meta($variation->ID, '_smarty_label_1', true),
+            'value' => $product_variation->get_meta('_smarty_label_1', true),
             'wrapper_class' => 'form-row form-row-first'
         ));
 
         // Custom field for Label 2
         woocommerce_wp_text_input(array(
-            'id' => 'smarty_label_2[' . $variation->ID . ']', 
+            'id' => 'smarty_label_2_' . $variation->ID,
+            'name' => 'smarty_label_2[' . $variation->ID . ']',
             'label' => __('Label 2', 'smarty-upsell-bundle-manager'), 
             'description' => __('Enter the label for example: `Best Value`', 'smarty-upsell-bundle-manager'),
             'desc_tip' => true,
-            'value' => get_post_meta($variation->ID, '_smarty_label_2', true),
+            'value' => $product_variation->get_meta('_smarty_label_2', true),
             'wrapper_class' => 'form-row form-row-last'
         ));
     }
@@ -967,15 +993,27 @@ if (!function_exists('smarty_save_custom_fields_variations')) {
      * @return void
      */
     function smarty_save_custom_fields_variations($variation_id, $i) {
-        // Save Best Seller Label
-        if (isset($_POST['smarty_label_1'][$variation_id])) {
-            update_post_meta($variation_id, '_smarty_label_1', sanitize_text_field($_POST['smarty_label_1'][$variation_id]));
+        $product_variation = wc_get_product($variation_id); // Use WooCommerce CRUD functions
+    
+        if (!$product_variation) {
+            return;
         }
-
-        // Save Best Value Label
-        if (isset($_POST['smarty_label_2'][$variation_id])) {
-            update_post_meta($variation_id, '_smarty_label_2', sanitize_text_field($_POST['smarty_label_2'][$variation_id]));
+    
+        // Save Best Seller Label (Label 1)
+        if (!empty($_POST['smarty_label_1'][$variation_id])) {
+            $product_variation->update_meta_data('_smarty_label_1', sanitize_text_field($_POST['smarty_label_1'][$variation_id]));
+        } else {
+            $product_variation->delete_meta_data('_smarty_label_1');
         }
+    
+        // Save Best Value Label (Label 2)
+        if (!empty($_POST['smarty_label_2'][$variation_id])) {
+            $product_variation->update_meta_data('_smarty_label_2', sanitize_text_field($_POST['smarty_label_2'][$variation_id]));
+        } else {
+            $product_variation->delete_meta_data('_smarty_label_2');
+        }
+    
+        $product_variation->save(); // Save all changes
     }
     add_action('woocommerce_save_product_variation', 'smarty_save_custom_fields_variations', 10, 2);
 }
@@ -1514,36 +1552,40 @@ if (!function_exists('smarty_admin_custom_js')) {
 		?>
 		<script type="text/javascript">
 			jQuery(document).ready(function($) {
-				function toggleLabelInputs() {
-					// Check the value of each field and disable or enable the other accordingly
-					$('.woocommerce_variation').each(function() {
-						var labelOneInput = $(this).find('[id^="smarty_label_1"]');
-						var labelTwoInput = $(this).find('[id^="smarty_label_2"]');
+                function toggleLabelInputs() {
+                    $('.woocommerce_variation').each(function() {
+                        var labelOneInput = $(this).find('[id^="smarty_label_1_"]');
+                        var labelTwoInput = $(this).find('[id^="smarty_label_2_"]');
 
-						if (labelOneInput.val() != '') {
-							labelTwoInput.prop('disabled', true);
-						} else {
-							labelTwoInput.prop('disabled', false);
-						}
+                        if (labelOneInput.val().trim() !== '') {
+                            labelTwoInput.prop('disabled', true);
+                        } else {
+                            labelTwoInput.prop('disabled', false);
+                        }
 
-						if (labelTwoInput.val() != '') {
-							labelOneInput.prop('disabled', true);
-						} else {
-							labelOneInput.prop('disabled', false);
-						}
-					});
-				}
+                        if (labelTwoInput.val().trim() !== '') {
+                            labelOneInput.prop('disabled', true);
+                        } else {
+                            labelOneInput.prop('disabled', false);
+                        }
+                    });
+                }
 
-				// Run the toggle function when WooCommerce variations are loaded
-				$(document).on('woocommerce_variations_loaded', function() {
-					toggleLabelInputs();
-				});
+                // Run toggle when WooCommerce variations are loaded
+                $(document).on('woocommerce_variations_loaded', function() {
+                    toggleLabelInputs();
+                });
 
-				// Bind the toggle function to the keyup event of each input field
-				$(document).on('keyup', '[id^="smarty_label_1"], [id^="smarty_label_2"]', function() {
-					toggleLabelInputs();
-				});
-			});
+                // Allow user to clear and re-enable fields
+                $(document).on('input', '[id^="smarty_label_1_"], [id^="smarty_label_2_"]', function() {
+                    toggleLabelInputs();
+                });
+
+                // Ensure fields are toggled when variations are updated
+                $(document).on('change', '[id^="smarty_label_1_"], [id^="smarty_label_2_"]', function() {
+                    toggleLabelInputs();
+                });
+            });
 		</script>
 		<?php
 	}
@@ -2308,7 +2350,7 @@ if (!function_exists('smarty_add_order_list_column')) {
 
 if (!function_exists('smarty_add_order_list_column_content')) {
     /**
-     * Adds content to the custom "is_bundle" column in the WooCommerce orders list.
+     * Adds content to the custom "is_bundle" column in the WooCommerce orders list (HPOS compatible).
      *
      * @param string $column The column name.
      * @param int $post_id The ID of the current order.
@@ -2316,22 +2358,30 @@ if (!function_exists('smarty_add_order_list_column_content')) {
      */
     function smarty_add_order_list_column_content($column, $post_id) {
         if ('is_bundle' === $column) {
-            $order = wc_get_order($post_id);
+            // Check if HPOS is enabled
+            if (class_exists('\Automattic\WooCommerce\Utilities\OrderUtil') && \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled()) {
+                $order = wc_get_container()->get(\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class)->get_order($post_id);
+            } else {
+                $order = wc_get_order($post_id);
+            }
+
+            if (!$order) {
+                return;
+            }
+
             $items = $order->get_items();
             $has_bundle = false;
-    
+
             foreach ($items as $item_id => $item) {
-                $additional_products = wc_get_order_item_meta($item_id, '_additional_products', true);
+                $additional_products = $item->get_meta('_additional_products', true);
                 if ($additional_products && is_array($additional_products)) {
                     $has_bundle = true;
                     break;
                 }
             }
-    
+
             if ($has_bundle) {
                 echo '<span class="dashicons dashicons-archive" title="' . __('This order contains bundled products', 'smarty-upsell-bundle-manager') . '"></span>';
-            } else {
-                echo '';
             }
         }
     }
