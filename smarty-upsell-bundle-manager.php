@@ -3,7 +3,7 @@
  * Plugin Name:             SM - Upsell Bundle Manager for WooCommerce
  * Plugin URI:              https://github.com/mnestorov/smarty-upsell-bundle-manager
  * Description:             Designed to change the product variation design for single products in WooCommerce.
- * Version:                 1.0.5
+ * Version:                 1.0.6
  * Author:                  Martin Nestorov
  * Author URI:              https://github.com/mnestorov
  * Text Domain:             smarty-upsell-bundle-manager
@@ -1740,24 +1740,58 @@ if (!function_exists('smarty_public_custom_js')) {
                 });
                 
                 $('form.cart').on('submit', function(e) {
-                    e.preventDefault(); // Prevent the form from submitting normally
+                    e.preventDefault(); // Prevent normal form submit
+                    var $form = $(this);
                     var additionalProducts = $('input[name="additional_products[]"]:checked').map(function() {
                         return $(this).val();
                     }).get();
+                    var variationId = $form.find('input[name="variation_id"]').val() || 0;
+                    var productId = $form.find('input[name="product_id"]').val();
+                    var quantity = $form.find('input[name="quantity"]').val() || 1;
 
+                    // Build variation object
+                    var variationData = {};
+                    $form.find('.variations select').each(function() {
+                        variationData[$(this).attr('name')] = $(this).val();
+                    });
+
+                    // ✅ MAIN PRODUCT AJAX
                     $.ajax({
-                        url: wc_add_to_cart_params.ajax_url,
+                        url: wc_add_to_cart_params.wc_ajax_url.replace('%%endpoint%%', 'add_to_cart'),
                         type: 'POST',
                         data: {
-                            action: 'smarty_choose_additional_products',
-                            additional_products: additionalProducts,
+                            product_id: productId,
+                            quantity: quantity,
+                            variation_id: variationId,
+                            variation: variationData
                         },
                         success: function(response) {
-                            // Handle success - add main product to cart after additional products
-                            $(this).off('submit').submit();
+                            console.log('Main product added');
+
+                            if (additionalProducts.length > 0) {
+                                // ✅ THEN ADD ADDITIONAL PRODUCTS
+                                $.ajax({
+                                    url: wc_add_to_cart_params.ajax_url,
+                                    type: 'POST',
+                                    data: {
+                                        action: 'smarty_choose_additional_products',
+                                        additional_products: additionalProducts
+                                    },
+                                    success: function(response) {
+                                        console.log('Additional products added');
+                                        $(document.body).trigger('added_to_cart', [response.fragments, response.cart_hash]);
+                                    },
+                                    error: function(response) {
+                                        console.log('Error adding additional products');
+                                    }
+                                });
+                            } else {
+                                // Just update cart
+                                $(document.body).trigger('added_to_cart', [response.fragments, response.cart_hash]);
+                            }
                         },
                         error: function(response) {
-                            console.log('Error adding additional products');
+                            console.log('Error adding main product');
                         }
                     });
                 });
@@ -1781,6 +1815,24 @@ if (!function_exists('smarty_public_custom_js')) {
                 });
             });
         </script>
+		<script type="text/javascript">
+			jQuery(document).ready(function($) {
+				// Prefetch WooCommerce cart fragments early
+				$.ajax({
+					type: 'POST',
+					url: wc_add_to_cart_params.wc_ajax_url.toString().replace('%%endpoint%%', 'get_refreshed_fragments'),
+					success: function(data) {
+						if (data && data.fragments) {
+							// Store the fragments in memory for later use if needed
+							window.prefetchedCartFragments = data.fragments;
+							window.prefetchedCartHash = data.cart_hash;
+							console.log('WooCommerce fragments prefetched');
+						}
+					}
+				});
+			});
+		</script>
+
         <?php
     }
     add_action('wp_head', 'smarty_public_custom_js');
@@ -2054,46 +2106,28 @@ if (!function_exists('smarty_add_additional_products_checkbox')) {
 }
 
 if (!function_exists('smarty_handle_additional_products_cart')) {
-    /**
-     * Handles the addition of additional products to the WooCommerce cart via AJAX.
-     *
-     * Processes and adds additional products selected by the user to the cart.
-     *
-     * @return void
-     */
     function smarty_handle_additional_products_cart() {
-        // Start session if not already started
-        if (!session_id()) {
-            session_start();
-        }
-    
-        // Retrieve additional products
         if (isset($_POST['additional_products']) && is_array($_POST['additional_products'])) {
-            $additional_products = array_map('intval', $_POST['additional_products']); // Ensure the IDs are integers
-    
-            // Initialize session storage if not set
-            if (!isset($_SESSION['added_additional_products'])) {
-                $_SESSION['added_additional_products'] = array();
-            }
-    
+            $additional_products = array_map('intval', $_POST['additional_products']);
+            
             foreach ($additional_products as $additional_product_id) {
-                // Add only if not already added in this session
-                if (!in_array($additional_product_id, $_SESSION['added_additional_products'])) {
-                    // Add additional product to the cart
-                    if (wc_get_product($additional_product_id)) {
-                        WC()->cart->add_to_cart($additional_product_id, 1);
-                        $_SESSION['added_additional_products'][] = $additional_product_id;
-                        error_log('Adding additional product ID: ' . $additional_product_id);
-                    } else {
-                        error_log('Product ID ' . $additional_product_id . ' not found.');
-                    }
+                $product = wc_get_product($additional_product_id);
+                if ($product) {
+                    WC()->cart->add_to_cart($additional_product_id, 1);
+                    error_log('Added additional product ID to cart: ' . $additional_product_id);
                 } else {
-                    error_log('Product ID ' . $additional_product_id . ' already added.');
+                    error_log('Product ID ' . $additional_product_id . ' not found.');
                 }
             }
+
+            // THIS sends back updated mini-cart + cart hash
+            WC_AJAX::get_refreshed_fragments();
         } else {
-             error_log('No additional products found in request.');
+            error_log('No additional products found in request.');
+            wp_send_json_error('No additional products selected.');
         }
+
+        wp_die(); // Always die at the end of AJAX
     }
 }
     
@@ -2198,40 +2232,6 @@ if (!function_exists('smarty_additional_product_recalculate_price')) {
             }
         }
     }
-}
-    
-if (!function_exists('smarty_display_additional_products_in_cart')) {
-    /**
-     * Displays additional products in the cart meta information.
-     *
-     * Adds a list of bundled products to the cart item's meta information, showing 
-     * the product names and prices in the cart and checkout pages.
-     *
-     * @param array $item_data The current item data array.
-     * @param array $cart_item The cart item array.
-     * @return array Modified item data array including additional products.
-     */
-    function smarty_display_additional_products_in_cart($item_data, $cart_item) {
-        if (isset($cart_item['additional_products']) && is_array($cart_item['additional_products'])) {
-            $additional_products_list = '<ul style="list-style-type: none !important; padding: 0 5px;">'; // Start an unstyled list
-            foreach ($cart_item['additional_products'] as $additional_product_id) {
-                $product = wc_get_product($additional_product_id);
-                if ($product) {
-                    $additional_products_list .= sprintf('<li style="font-weight: normal; margin: 5px 10px;"><span style="color: #a1a1a1;">- 1 <small>x</small></span> %s (%s)</li>',
-                        esc_html($product->get_name()),
-                        wc_price($product->get_price())
-                    );
-                }
-            }
-            $additional_products_list .= '</ul>';
-            $item_data[] = array(
-                'name' => __('In a bundle with', 'smarty-upsell-bundle-manager'),
-                'value' => $additional_products_list,
-                'display' => '' // This ensures it will render our HTML directly
-            );
-        }
-        return $item_data;
-    }         
 }
     
 if (!function_exists('smarty_add_order_item_meta')) {
@@ -2442,6 +2442,10 @@ if (!function_exists('smarty_save_additional_products_for_product')) {
             $meta_value = get_post_meta($post_id, '_smarty_additional_products', true);
             error_log('Meta value after delete: ' . print_r($meta_value, true));
         }
+		
+		// Save the checkbox for styling last 3 variations
+        $style_last_three = isset($_POST['_smarty_style_last_three_variations']) ? 'yes' : 'no';
+        update_post_meta($post_id, '_smarty_style_last_three_variations', $style_last_three);
     }
 }
 
@@ -2459,16 +2463,8 @@ if (get_option('smarty_enable_additional_products', '1') === '1') {
     add_action('wp_ajax_nopriv_woocommerce_update_cart_action', 'smarty_calculate_cart_item_price');
     add_action('wp_ajax_woocommerce_add_to_cart', 'smarty_calculate_cart_item_price');
     add_action('wp_ajax_nopriv_woocommerce_add_to_cart', 'smarty_calculate_cart_item_price');
-    add_filter('woocommerce_get_cart_item_from_session', 'smarty_get_cart_item_from_session', 10, 2);
-    add_filter('woocommerce_add_cart_item_data', 'smarty_add_cart_item_data', 10, 3);
-    add_filter('woocommerce_get_item_data', 'smarty_display_additional_products_in_cart', 10, 2);
-    add_action('woocommerce_before_calculate_totals', 'smarty_calculate_cart_item_price', 10, 1);
-    add_action('woocommerce_before_calculate_totals', 'smarty_additional_product_recalculate_price', 10, 1);
     add_filter('manage_edit-shop_order_columns', 'smarty_add_order_list_column');
     add_action('manage_shop_order_posts_custom_column', 'smarty_add_order_list_column_content', 10, 2);
-    add_action('woocommerce_add_order_item_meta', 'smarty_add_order_item_meta', 10, 3);
-    add_action('woocommerce_order_item_meta_end', 'smarty_display_additional_products_order_meta', 10, 3);
-    add_action('woocommerce_after_order_itemmeta', 'smarty_display_additional_products_order_meta', 10, 3);
     add_filter('woocommerce_hidden_order_itemmeta', 'smarty_hide_additional_product_skus');
 }
 

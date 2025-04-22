@@ -24,3 +24,8 @@
     - Switched from `update_option()` to `update_term_meta()` for saving attribute metadata.
 - Fixed variation label field issue:
     - Custom fields for variations are now properly editable in the WooCommerce product edit screen.
+
+### 1.0.6 (2025.04.22)
+- Now we use standard form submission and enhance with JS only for price display/UX.
+- AJAX: switched to wc-ajax=add_to_cart endpoint.
+- Fixed variation data format to be an object, not query string.
